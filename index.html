@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Algorithm Odyssey</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --bg:     #0b1120;
+  --bg2:    #0f1829;
+  --teal:   #2dd4bf;
+  --indigo: #6366f1;
+  --text:   #e2e8f0;
+  --muted:  #64748b;
+  --dim:    #334155;
+  --border: rgba(45,212,191,0.12);
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: -200px; right: -200px;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(45,212,191,0.05) 0%, transparent 70%);
+  pointer-events: none; z-index: 0;
+}
+
+.screen { display: none; position: relative; z-index: 1; }
+.screen.active { display: block; }
+
+#landing.active {
+  display: flex;
+}
+
+/* ═══════════ LOGIN ═══════════ */
+#landing {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background:
+    radial-gradient(ellipse 70% 60% at 80% 30%, rgba(45,212,191,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 60% at 10% 80%, rgba(99,102,241,0.05) 0%, transparent 60%);
+}
+
+.login-box {
+  width: 100%;
+  max-width: 580px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: rgba(15,24,41,0.95);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.login-left {
+  padding: 36px 28px;
+  border-right: 1px solid rgba(45,212,191,0.08);
+  background: rgba(45,212,191,0.02);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.login-tag {
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: var(--teal);
+  text-transform: uppercase;
+  margin-bottom: 14px;
+  font-family: 'Space Mono', monospace;
+}
+
+.login-title {
+  font-family: 'Space Mono', monospace;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.25;
+  margin-bottom: 12px;
+}
+.login-title span { color: var(--teal); }
+
+.login-desc {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.7;
+  margin-bottom: 20px;
+}
+
+.login-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.login-chip {
+  font-size: 9px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(45,212,191,0.2);
+  color: var(--teal);
+  letter-spacing: 0.5px;
+}
+
+.login-right { padding: 36px 28px; }
+
+.login-label {
+  display: block;
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  margin-top: 14px;
+}
+.login-label:first-child { margin-top: 0; }
+
+.login-input {
+  width: 100%;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--dim);
+  border-radius: 7px;
+  padding: 10px 12px;
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.login-input:focus { border-color: var(--teal); }
+.login-input::placeholder { color: var(--dim); }
+
+.login-btn {
+  width: 100%;
+  padding: 11px;
+  background: var(--teal);
+  color: var(--bg);
+  border: none;
+  border-radius: 7px;
+  font-family: 'Space Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: opacity 0.2s;
+  margin-top: 20px;
+}
+.login-btn:hover { opacity: 0.85; }
+
+.login-footer {
+  margin-top: 16px;
+  font-size: 10px;
+  color: var(--dim);
+  letter-spacing: 1px;
+}
+
+@media(max-width: 520px) {
+  .login-box { grid-template-columns: 1fr; }
+  .login-left { border-right: none; border-bottom: 1px solid rgba(45,212,191,0.08); padding: 24px 20px; }
+  .login-right { padding: 24px 20px; }
+}
+
+/* ═══════════ ANIMATIONS ═══════════ */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* login page — staggered fade up */
+#landing.active { animation: fadeIn 0.4s ease; }
+
+.login-left  { animation: fadeUp 0.5s ease 0.1s both; }
+.login-right { animation: fadeUp 0.5s ease 0.25s both; }
+
+/* dashboard — fade in */
+#dashboard.active { animation: fadeIn 0.35s ease; }
+
+/* card stagger on dashboard load */
+.card { animation: fadeUp 0.4s ease both; }
+.card:nth-child(1) { animation-delay: 0.05s; }
+.card:nth-child(2) { animation-delay: 0.1s;  }
+.card:nth-child(3) { animation-delay: 0.15s; }
+.card:nth-child(4) { animation-delay: 0.2s;  }
+.card:nth-child(5) { animation-delay: 0.25s; }
+.card:nth-child(6) { animation-delay: 0.3s;  }
+
+/* stat boxes stagger */
+.stat { animation: fadeUp 0.4s ease both; }
+.stat:nth-child(1) { animation-delay: 0.05s; }
+.stat:nth-child(2) { animation-delay: 0.1s;  }
+.stat:nth-child(3) { animation-delay: 0.15s; }
+.stat:nth-child(4) { animation-delay: 0.2s;  }
+
+/* page transition overlay */
+#overlay {
+  position: fixed; inset: 0;
+  background: var(--bg);
+  z-index: 999;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+#overlay.show { opacity: 1; pointer-events: all; }
+
+.logout-btn {
+  font-size: 11px;
+  font-family: 'Space Mono', monospace;
+  padding: 5px 12px;
+  background: transparent;
+  border: 1px solid var(--dim);
+  color: var(--muted);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+.logout-btn:hover { border-color: #f87171; color: #f87171; }
+
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 32px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(11,17,32,0.95);
+  position: sticky;
+  top: 0; z-index: 50;
+}
+.nav-logo {
+  font-family: 'Space Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--teal);
+}
+.nav-right { display: flex; align-items: center; gap: 12px; }
+.nav-name { font-size: 13px; color: var(--text); font-weight: 500; }
+.nav-id { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--muted); }
+.nav-xp {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  color: var(--teal);
+}
+
+/* ═══════════ DASHBOARD ═══════════ */
+#dashboard { min-height: 100vh; padding-bottom: 60px; }
+
+.dash-hero {
+  padding: 32px 32px 20px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.dash-greeting { font-size: 18px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+.dash-greeting span { color: var(--teal); }
+.dash-sub { font-size: 12px; color: var(--muted); margin-bottom: 20px; }
+
+.xp-row {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+.xp-track { flex:1; height:5px; background:var(--dim); border-radius:3px; overflow:hidden; }
+.xp-fill  { height:100%; background:linear-gradient(90deg,var(--indigo),var(--teal)); border-radius:3px; width:0%; transition:width 0.8s ease; }
+.xp-sub   { font-size:10px; color:var(--muted); margin-top:4px; }
+.xp-big   { font-family:'Space Mono',monospace; font-size:16px; font-weight:700; color:var(--teal); white-space:nowrap; }
+
+.badges { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; }
+.badge  { font-size:11px; padding:3px 10px; border-radius:20px; border:1px solid var(--dim); color:var(--dim); }
+.badge.earned { border-color:rgba(45,212,191,0.35); color:var(--teal); }
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
+  gap: 10px;
+  padding: 0 32px;
+  max-width: 1100px;
+  margin: 0 auto 28px;
+}
+.stat { background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:14px; text-align:center; }
+.stat-n { font-family:'Space Mono',monospace; font-size:22px; font-weight:700; color:var(--teal); margin-bottom:4px; }
+.stat-l { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; }
+
+.section-head {
+  font-family:'Space Mono',monospace; font-size:10px;
+  letter-spacing:2px; color:var(--muted); text-transform:uppercase;
+  padding:0 32px; max-width:1100px; margin:0 auto 14px;
+}
+
+/* ═══════════ CARDS ═══════════ */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px,1fr));
+  gap: 14px;
+  padding: 0 32px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.15s;
+}
+.card:not(.locked):hover { border-color:rgba(45,212,191,0.3); transform:translateY(-2px); }
+.card.locked { opacity:0.4; pointer-events:none; }
+
+.card-bar { height:3px; }
+
+.card-body { padding:16px 18px; }
+
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+.ch    { font-size:10px; letter-spacing:1px; color:var(--muted); text-transform:uppercase; margin-bottom:2px; }
+.topic { font-size:10px; color:var(--teal); letter-spacing:1px; text-transform:uppercase; margin-bottom:4px; }
+.title { font-size:15px; font-weight:600; color:var(--text); line-height:1.3; }
+
+.lvl { font-size:10px; font-weight:600; padding:3px 8px; border-radius:4px; letter-spacing:1px; text-transform:uppercase; flex-shrink:0; }
+.easy   { background:rgba(52,211,153,0.1); color:#34d399; border:1px solid rgba(52,211,153,0.2); }
+.medium { background:rgba(251,191,36,0.1); color:#fbbf24; border:1px solid rgba(251,191,36,0.2); }
+.hard   { background:rgba(248,113,113,0.1); color:#f87171; border:1px solid rgba(248,113,113,0.2); }
+
+.desc { font-size:12px; color:var(--muted); line-height:1.6; margin-bottom:12px; }
+
+.tags { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:14px; }
+.tag  { font-size:10px; padding:2px 7px; border-radius:4px; background:rgba(255,255,255,0.03); color:var(--muted); border:1px solid var(--border); }
+
+.card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+.xp-label { font-size:11px; color:var(--teal); font-family:'Space Mono',monospace; }
+.enter-btn {
+  font-size:11px; font-family:'Space Mono',monospace;
+  padding:5px 12px; background:transparent;
+  border:1px solid var(--teal); color:var(--teal);
+  border-radius:5px; cursor:pointer; text-decoration:none;
+  display:inline-block; transition:background 0.15s, color 0.15s;
+}
+.enter-btn:hover { background:var(--teal); color:var(--bg); }
+.locked-btn { font-size:11px; font-family:'Space Mono',monospace; padding:5px 12px; border:1px solid var(--dim); color:var(--dim); border-radius:5px; }
+
+.foot { text-align:center; padding:48px 20px 20px; font-size:11px; color:var(--dim); letter-spacing:1px; }
+
+@media(max-width:600px) {
+  .stats { grid-template-columns:repeat(2,1fr); padding:0 16px; }
+  .cards { grid-template-columns:1fr; padding:0 16px; }
+  .dash-hero { padding:20px 16px 14px; }
+  .section-head { padding:0 16px; }
+  .navbar { padding:12px 16px; }
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="overlay"></div>
+<div id="landing" class="screen active">
+  <div class="login-box">
+
+    <div class="login-left">
+      <div class="login-tag">DAA · IV · T089</div>
+      <div class="login-title">Algorithm<br><span>Odyssey</span></div>
+      <div class="login-desc">An interactive way to learn Design & Analysis of Algorithms — built by The Arcane Coders, GEU.</div>
+      <div class="login-chips">
+        <span class="login-chip">Sorting</span>
+        <span class="login-chip">Recursion</span>
+        <span class="login-chip">D&amp;C</span>
+        <span class="login-chip">Graphs</span>
+        <span class="login-chip">Greedy</span>
+        <span class="login-chip">DP</span>
+      </div>
+    </div>
+
+    <div class="login-right">
+      <label class="login-label">Your Name</label>
+      <input class="login-input" id="nameInput" type="text" placeholder="Enter your name..." maxlength="24">
+
+      <label class="login-label">College / University</label>
+      <input class="login-input" id="uniInput" type="text" placeholder="e.g. GEU, IIT, VIT..." maxlength="32">
+
+      <button class="login-btn" onclick="beginOdyssey()">Start →</button>
+      <div class="login-footer">The Arcane Coders · GEU · 2026</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard" class="screen">
+
+  <nav class="navbar">
+    <div class="nav-logo">Algorithm Odyssey</div>
+    <div class="nav-right">
+      <div>
+        <div class="nav-name" id="navName">—</div>
+        <div class="nav-id"  id="navId">—</div>
+      </div>
+      <div class="nav-xp" id="navXP">0 XP</div>
+      <button class="logout-btn" onclick="logout()">Log out</button>
+    </div>
+  </nav>
+
+  <div class="dash-hero">
+    <div class="dash-greeting">Hey, <span id="greetName">—</span></div>
+    <div class="dash-sub">Pick a chapter and start learning.</div>
+
+    <div class="xp-row">
+      <div style="flex:1">
+        <div style="font-size:10px;color:var(--muted);margin-bottom:6px;letter-spacing:1px;">XP PROGRESS</div>
+        <div class="xp-track"><div class="xp-fill" id="xpFill"></div></div>
+        <div class="xp-sub"><span id="xpCur">0</span> / 195 XP</div>
+      </div>
+      <div class="xp-big" id="xpNum">0 XP</div>
+    </div>
+
+    <div class="badges">
+      <div class="badge" id="badge1">Sorter</div>
+      <div class="badge" id="badge2">Recursive Mind</div>
+      <div class="badge" id="badge3">Divide &amp; Conquer</div>
+      <div class="badge" id="badge4">Pathfinder</div>
+      <div class="badge" id="badge5">Greedy Master</div>
+      <div class="badge" id="badge6">DP Champion</div>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-n" id="stMod">0</div><div class="stat-l">Modules Done</div></div>
+    <div class="stat"><div class="stat-n" id="stXP">0</div><div class="stat-l">Total XP</div></div>
+    <div class="stat"><div class="stat-n" id="stBadge">0</div><div class="stat-l">Badges</div></div>
+    <div class="stat"><div class="stat-n" id="stStreak">1</div><div class="stat-l">Day Streak</div></div>
+  </div>
+
+  <div class="section-head">Chapters</div>
+
+  <div class="cards">
+
+    <div class="card" onclick="goTo('sorting.html')">
+      <div class="card-bar" style="background:linear-gradient(90deg,#2dd4bf,#6366f1)"></div>
+      <div class="card-body">
+        <div class="card-top">
+          <div><div class="ch">Chapter 1</div><div class="topic">Sorting Algorithms</div><div class="title">The Starforge Arena</div></div>
+          <div class="lvl easy">Easy</div>
+        </div>
+        <div class="desc">Race 6 sorting algorithms on the same array. Manually sort in duel mode. Master comparisons, swaps and time complexity.</div>
+        <div class="tags"><span class="tag">Bubble</span><span class="tag">Selection</span><span class="tag">Insertion</span><span class="tag">Quick</span><span class="tag">Heap</span><span class="tag">Counting</span></div>
+        <div class="card-foot"><div class="xp-label">⚡ 65 XP</div><a class="enter-btn" href="sorting.html">Enter →</a></div>
+      </div>
+    </div>
+
+    <div class="card" onclick="goTo('recursion.html')">
+      <div class="card-bar" style="background:linear-gradient(90deg,#6366f1,#ec4899)"></div>
+      <div class="card-body">
+        <div class="card-top">
+          <div><div class="ch">Chapter 2</div><div class="topic">Recursion</div><div class="title">Temple of Infinite Monks</div></div>
+          <div class="lvl medium">Medium</div>
+        </div>
+        <div class="desc">Move sacred disks across ancient pillars. Watch the call stack grow live as you play. Use auto-solve to see the optimal path.</div>
+        <div class="tags"><span class="tag">Hanoi</span><span class="tag">Fibonacci</span><span class="tag">Factorial</span><span class="tag">Binary Search</span></div>
+        <div class="card-foot"><div class="xp-label">⚡ 65 XP</div><a class="enter-btn" href="recursion.html">Enter →</a></div>
+      </div>
+    </div>
+
+    <div class="card" onclick="goTo('dc.html')">
+      <div class="card-bar" style="background:linear-gradient(90deg,#ec4899,#f59e0b)"></div>
+      <div class="card-body">
+        <div class="card-top">
+          <div><div class="ch">Chapter 3</div><div class="topic">Divide &amp; Conquer</div><div class="title">The Star Boundary</div></div>
+          <div class="lvl hard">Hard</div>
+        </div>
+        <div class="desc">Watch Merge Sort split and combine arrays live. Then plot stars on a galaxy map and draw the convex hull boundary.</div>
+        <div class="tags"><span class="tag">Merge Sort</span><span class="tag">Quick Sort</span><span class="tag">Convex Hull</span><span class="tag">Kth Smallest</span></div>
+        <div class="card-foot"><div class="xp-label">⚡ 65 XP</div><a class="enter-btn" href="dc.html">Enter →</a></div>
+      </div>
+    </div>
+
+    <div class="card locked">
+      <div class="card-bar" style="background:var(--dim)"></div>
+      <div class="card-body">
+        <div class="card-top">
+          <div><div class="ch">Chapter 4</div><div class="topic">Graph Algorithms</div><div class="title">The Oracle's Lost Signal</div></div>
+          <div class="lvl hard">Hard</div>
+        </div>
+        <div class="desc">Navigate a haunted maze. BFS lights the shortest path in blue, DFS explores in orange. See the difference come alive.</div>
+        <div class="tags"><span class="tag">BFS</span><span class="tag">DFS</span><span class="tag">Dijkstra</span><span class="tag">Kruskal</span><span class="tag">Bellman-Ford</span></div>
+        <div class="card-foot"><div class="xp-label">⚡ 65 XP</div><div class="locked-btn">Coming soon</div></div>
+      </div>
+    </div>
+
+    <div class="card locked">
+      <div class="card-bar" style="background:var(--dim)"></div>
+      <div class="card-body">
+        <div class="card-top">
+          <div><div class="ch">Chapter 5</div><div class="topic">Greedy Algorithms</div><div class="title">The Cipher Vault</div></div>
+          <div class="lvl hard">Hard</div>
+        </div>
+        <div class="desc">Make exact change with the fewest coins. Try non-greedy and watch it fail. Decode secret messages using Huffman trees.</div>
+        <div class="tags"><span class="tag">Huffman</span><span class="tag">Coin Change</span><span class="tag">Activity Sel.</span><span class="tag">Fractional KP</span></div>
+        <div class="card-foot"><div class="xp-label">⚡ 65 XP</div><div class="locked-btn">Coming soon</div></div>
+      </div>
+    </div>
+
+    <div class="card locked">
+      <div class="card-bar" style="background:var(--dim)"></div>
+      <div class="card-body">
+        <div class="card-top">
+          <div><div class="ch">Chapter 6</div><div class="topic">Dynamic Programming</div><div class="title">The Survival Loot Drop</div></div>
+          <div class="lvl hard">Hard</div>
+        </div>
+        <div class="desc">Pick loot after battle to maximise value. Watch the DP table fill live. Match the optimal choice and earn full XP.</div>
+        <div class="tags"><span class="tag">0/1 Knapsack</span><span class="tag">LCS</span><span class="tag">Matrix Chain</span><span class="tag">Fibonacci DP</span></div>
+        <div class="card-foot"><div class="xp-label">⚡ 65 XP</div><div class="locked-btn">Coming soon</div></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="foot">The Arcane Coders &nbsp;·&nbsp; DAA-IV-T089 &nbsp;·&nbsp; GEU &nbsp;·&nbsp; 2026</div>
+
+</div>
+
+<script>
+function beginOdyssey() {
+  const name = document.getElementById('nameInput').value.trim();
+  if (!name) {
+    const el = document.getElementById('nameInput');
+    el.style.borderColor = '#f87171'; el.focus();
+    setTimeout(() => el.style.borderColor = '', 1200);
+    return;
+  }
+  const uni = document.getElementById('uniInput').value.trim();
+  const id  = 'AOD-' + Math.floor(1000 + Math.random() * 9000);
+  const e   = { name, uni, id, xp: 0, badges: [], moduleDone: [], streak: 1 };
+  localStorage.setItem('algo_explorer', JSON.stringify(e));
+
+  // fade out, then show dashboard
+  const overlay = document.getElementById('overlay');
+  overlay.classList.add('show');
+  setTimeout(() => {
+    showDash(e);
+    overlay.classList.remove('show');
+  }, 320);
+}
+
+function showDash(e) {
+  const landing   = document.getElementById('landing');
+  const dashboard = document.getElementById('dashboard');
+  landing.classList.remove('active');
+  landing.style.display = 'none';
+  dashboard.classList.add('active');
+  document.getElementById('navName').textContent   = e.name;
+  document.getElementById('navId').textContent     = e.id;
+  document.getElementById('greetName').textContent = e.name;
+  document.getElementById('navXP').textContent     = (e.xp || 0) + ' XP';
+  document.getElementById('xpNum').textContent     = (e.xp || 0) + ' XP';
+  document.getElementById('xpCur').textContent     = e.xp || 0;
+  document.getElementById('stMod').textContent     = (e.moduleDone || []).length;
+  document.getElementById('stXP').textContent      = e.xp || 0;
+  document.getElementById('stBadge').textContent   = (e.badges || []).length;
+  document.getElementById('stStreak').textContent  = e.streak || 1;
+  setTimeout(() => {
+    document.getElementById('xpFill').style.width = Math.min(((e.xp||0)/195)*100, 100) + '%';
+  }, 300);
+  (e.badges || []).forEach((_, i) => {
+    const el = document.getElementById('badge' + (i + 1));
+    if (el) el.classList.add('earned');
+  });
+  window.scrollTo(0, 0);
+}
+
+function logout() {
+  const overlay = document.getElementById('overlay');
+  overlay.classList.add('show');
+  setTimeout(() => {
+    localStorage.removeItem('algo_explorer');
+    const dashboard = document.getElementById('dashboard');
+    const landing   = document.getElementById('landing');
+    dashboard.classList.remove('active');
+    landing.style.display = '';
+    landing.classList.add('active');
+    overlay.classList.remove('show');
+    document.getElementById('nameInput').value = '';
+    document.getElementById('uniInput').value  = '';
+  }, 300);
+}
+
+function goTo(page) {
+  if (!localStorage.getItem('algo_explorer')) return;
+  const overlay = document.getElementById('overlay');
+  overlay.classList.add('show');
+  setTimeout(() => { window.location.href = page; }, 280);
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  const saved = localStorage.getItem('algo_explorer');
+  if (saved) { try { showDash(JSON.parse(saved)); } catch(e) { localStorage.removeItem('algo_explorer'); } }
+});
+</script>
+</body>
+</html>

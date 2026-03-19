@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ch 3 — Divide & Conquer | Algorithm Odyssey</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#111318; --bg2:#1a1d26; --bg3:#21252f; --border:#2e3344;
+    --text:#dde1ec; --muted:#6b7394; --dim:#3a3f52;
+    --blue:#5b8ef0; --teal:#3fb8a0; --yellow:#e6b84a;
+    --red:#e05c5c; --green:#4cae7a; --purple:#9b7de8; --orange:#e8894a;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:15px;line-height:1.6;}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:13px 24px;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50;background:var(--bg);}
+  .nav-back{color:var(--orange);text-decoration:none;font-size:13px;font-family:'Space Mono',monospace;}
+  .nav-back:hover{opacity:0.7;}
+  .nav-title{font-family:'Space Mono',monospace;font-size:12px;color:var(--muted);}
+  .nav-xp{background:var(--bg2);border:1px solid var(--border);border-radius:5px;padding:3px 10px;font-size:11px;color:var(--yellow);font-family:'Space Mono',monospace;}
+  .tabs{display:flex;border-bottom:1px solid var(--border);padding:0 24px;overflow-x:auto;background:var(--bg);}
+  .tab{padding:13px 18px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all 0.15s;user-select:none;}
+  .tab:hover{color:var(--text);}
+  .tab.active{color:var(--orange);border-bottom-color:var(--orange);}
+  .panel{display:none;padding:28px 24px;max-width:880px;margin:0 auto;}
+  .panel.active{display:block;}
+  h2{font-family:'Space Mono',monospace;font-size:19px;color:var(--text);margin-bottom:6px;}
+  h3{font-family:'Space Mono',monospace;font-size:14px;color:var(--orange);margin-bottom:8px;margin-top:24px;}
+  p{color:#94a3b8;margin-bottom:12px;}
+  .tag{display:inline-block;padding:2px 9px;border-radius:3px;font-size:10px;font-weight:700;letter-spacing:1px;font-family:'Space Mono',monospace;margin-right:5px;margin-bottom:5px;}
+  .to{background:rgba(232,137,74,0.1);color:var(--orange);border:1px solid rgba(232,137,74,0.2);}
+  .ti{background:rgba(91,142,240,0.1);color:var(--blue);border:1px solid rgba(91,142,240,0.2);}
+  .th{background:rgba(224,92,92,0.1);color:var(--red);border:1px solid rgba(224,92,92,0.2);}
+  .card{background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:18px;margin-bottom:14px;}
+  .card-title{font-family:'Space Mono',monospace;font-size:12px;color:var(--text);margin-bottom:7px;font-weight:700;}
+  table{width:100%;border-collapse:collapse;margin-bottom:14px;}
+  th{background:var(--bg3);padding:9px 12px;text-align:left;font-size:11px;font-family:'Space Mono',monospace;color:var(--muted);font-weight:400;border:1px solid var(--border);}
+  td{padding:9px 12px;border:1px solid var(--border);font-size:13px;}
+  tr:nth-child(even) td{background:rgba(255,255,255,0.02);}
+  .g{color:var(--green);font-family:'Space Mono',monospace;font-size:11px;}
+  .ok{color:var(--yellow);font-family:'Space Mono',monospace;font-size:11px;}
+  .b{color:var(--red);font-family:'Space Mono',monospace;font-size:11px;}
+  .algo-btns{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:20px;}
+  .algo-btn{padding:7px 14px;border-radius:5px;border:1px solid var(--border);background:var(--bg2);color:var(--muted);font-size:13px;cursor:pointer;transition:all 0.15s;}
+  .algo-btn:hover{border-color:var(--orange);color:var(--text);}
+  .algo-btn.active{border-color:var(--orange);color:var(--orange);background:rgba(232,137,74,0.07);}
+  .ac{display:none;} .ac.active{display:block;}
+  .code{background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:14px;font-family:'Space Mono',monospace;font-size:11px;color:#94a3b8;line-height:1.8;overflow-x:auto;white-space:pre;margin-bottom:14px;}
+  .kw{color:#c084fc;}.fn{color:#38bdf8;}.cm{color:#475569;font-style:italic;}.nm{color:#fb923c;}
+  select,.btn{background:var(--bg2);border:1px solid var(--border);border-radius:5px;padding:7px 12px;color:var(--text);font-size:13px;font-family:'Inter',sans-serif;cursor:pointer;outline:none;}
+  select:hover,.btn:hover{border-color:var(--orange);}
+  .btn-p{background:var(--orange);color:#fff;border-color:var(--orange);font-weight:600;}
+  .btn-p:hover{background:#d4793e;}
+  .btn-b{background:var(--blue);color:#fff;border-color:var(--blue);font-weight:600;}
+  .btn-g{background:var(--green);color:#111;border-color:var(--green);font-weight:600;}
+  .yt-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  @media(max-width:600px){.yt-grid{grid-template-columns:1fr;}}
+  .yt-card{background:var(--bg2);border:1px solid var(--border);border-radius:9px;overflow:hidden;cursor:pointer;transition:border-color 0.2s;}
+  .yt-card:hover{border-color:var(--orange);}
+  .yt-thumb{width:100%;aspect-ratio:16/9;background:var(--bg3);display:flex;align-items:center;justify-content:center;position:relative;font-size:26px;color:var(--muted);}
+  .yt-play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.35);font-size:32px;}
+  .yt-info{padding:10px 13px;}
+  .yt-title{font-size:13px;font-weight:500;margin-bottom:3px;}
+  .yt-ch{font-size:11px;color:var(--muted);}
+  .yt-embed{width:100%;aspect-ratio:16/9;border:none;border-radius:9px;margin-bottom:14px;}
+
+  /* MERGE VIZ */
+  .merge-log{background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:10px;max-height:240px;overflow-y:auto;margin-bottom:12px;font-family:'Space Mono',monospace;font-size:11px;}
+  .ml-d{color:var(--orange);margin-bottom:3px;}.ml-b{color:var(--blue);margin-bottom:3px;}.ml-c{color:var(--green);margin-bottom:3px;}.ml-r{color:var(--teal);margin-bottom:3px;}
+  .arr-row{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:14px;}
+  .abox{width:34px;height:34px;border:1px solid var(--border);border-radius:5px;display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:12px;font-weight:700;transition:all 0.25s;background:var(--bg3);}
+  .abox.dividing{border-color:var(--orange);color:var(--orange);background:rgba(232,137,74,0.1);}
+  .abox.merging{border-color:var(--green);color:var(--green);background:rgba(76,174,122,0.1);}
+  .abox.done{border-color:var(--teal);color:var(--teal);}
+  .viz-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px;align-items:center;}
+  .viz-stat{background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:6px 12px;font-size:12px;font-family:'Space Mono',monospace;}
+  .viz-stat b{color:var(--orange);}
+
+  /* COMPARE */
+  .brow{display:flex;align-items:center;gap:10px;margin-bottom:9px;}
+  .blbl{font-size:11px;font-family:'Space Mono',monospace;color:var(--muted);width:120px;flex-shrink:0;}
+  .btrack{flex:1;background:var(--bg3);border-radius:3px;height:26px;overflow:hidden;}
+  .bfill{height:100%;border-radius:3px;display:flex;align-items:center;padding-left:7px;font-size:10px;font-family:'Space Mono',monospace;color:#111;font-weight:700;transition:width 0.8s ease;width:0%;}
+  .btime{font-size:11px;color:var(--muted);font-family:'Space Mono',monospace;width:66px;text-align:right;}
+  .ibtns{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px;}
+  .ibtn{padding:6px 12px;border-radius:5px;border:1px solid var(--border);background:var(--bg2);color:var(--muted);font-size:11px;cursor:pointer;font-family:'Space Mono',monospace;}
+  .ibtn:hover{border-color:var(--orange);color:var(--text);}
+  .ibtn.active{border-color:var(--orange);color:var(--orange);background:rgba(232,137,74,0.07);}
+
+  /* GAME */
+  .game-tabs{display:flex;gap:8px;margin-bottom:18px;}
+  .gtab{flex:1;padding:10px;border-radius:7px;border:1px solid var(--border);background:var(--bg3);color:var(--muted);cursor:pointer;font-size:13px;text-align:center;transition:all 0.15s;font-family:'Space Mono',monospace;font-size:12px;}
+  .gtab.active{border-color:var(--orange);color:var(--orange);background:rgba(232,137,74,0.07);}
+  .gtab:hover{border-color:var(--orange);color:var(--text);}
+  .garea{display:none;} .garea.active{display:block;}
+
+  /* MERGE GAME */
+  #mgArr{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px;min-height:50px;align-items:center;}
+  #mgLeft,#mgRight{display:flex;gap:6px;flex-wrap:wrap;min-height:44px;align-items:center;padding:10px;border-radius:7px;border:2px dashed var(--border);flex:1;}
+  #mgLeft.active-target{border-color:var(--orange);}
+  #mgRight.active-target{border-color:var(--blue);}
+  .mg-box{width:38px;height:38px;border:1px solid var(--border);border-radius:5px;display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.15s;background:var(--bg3);user-select:none;}
+  .mg-box:hover{border-color:var(--orange);color:var(--orange);}
+  .mg-box.inleft{background:rgba(232,137,74,0.1);border-color:var(--orange);color:var(--orange);}
+  .mg-box.inright{background:rgba(91,142,240,0.1);border-color:var(--blue);color:var(--blue);}
+  .mg-box.merged{background:rgba(76,174,122,0.1);border-color:var(--green);color:var(--green);}
+  .mg-box.wrong{background:rgba(224,92,92,0.15);border-color:var(--red);color:var(--red);}
+  #mgMerged{display:flex;gap:6px;flex-wrap:wrap;min-height:44px;align-items:center;padding:10px;border-radius:7px;border:2px dashed var(--green);margin-top:12px;}
+  .fb{padding:10px 14px;border-radius:7px;font-size:13px;font-weight:500;margin-bottom:12px;display:none;}
+  .fb.good{background:rgba(76,174,122,0.1);border:1px solid rgba(76,174,122,0.2);color:var(--green);display:block;}
+  .fb.bad{background:rgba(224,92,92,0.1);border:1px solid rgba(224,92,92,0.2);color:var(--red);display:block;}
+  .fb.info{background:rgba(91,142,240,0.1);border:1px solid rgba(91,142,240,0.2);color:var(--blue);display:block;}
+  .gstat{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
+  .gs{background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:6px 12px;font-size:12px;font-family:'Space Mono',monospace;}
+  .gs b{color:var(--orange);}
+
+  /* HULL GAME */
+  #hullCanvas{background:var(--bg3);border:1px solid var(--border);border-radius:9px;cursor:crosshair;display:block;width:100%;}
+  .hull-legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;font-size:11px;font-family:'Space Mono',monospace;color:var(--muted);}
+  .hl-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;}
+
+  #xpToast{position:fixed;top:60px;right:18px;background:var(--bg2);border:1px solid var(--yellow);border-radius:7px;padding:10px 16px;font-family:'Space Mono',monospace;font-size:12px;color:var(--yellow);z-index:999;transform:translateX(130%);transition:transform 0.3s;}
+  #xpToast.show{transform:translateX(0);}
+  ::-webkit-scrollbar{width:5px;height:5px;}
+  ::-webkit-scrollbar-track{background:var(--bg);}
+  ::-webkit-scrollbar-thumb{background:var(--dim);border-radius:3px;}
+</style>
+</head>
+<body>
+<div id="xpToast">+0 XP</div>
+<nav>
+  <a href="index.html" class="nav-back">&lt;-- back</a>
+  <span class="nav-title">ch 03 -- divide &amp; conquer</span>
+  <div class="nav-xp" id="navXP">0 XP</div>
+</nav>
+<div class="tabs">
+  <div class="tab active" onclick="sw('learn')">learn</div>
+  <div class="tab" onclick="sw('watch')">watch</div>
+  <div class="tab" onclick="sw('visualize')">visualize</div>
+  <div class="tab" onclick="sw('compare')">compare</div>
+  <div class="tab" onclick="sw('game')">game</div>
+</div>
+
+<!-- LEARN -->
+<div id="panel-learn" class="panel active">
+  <h2>Divide &amp; Conquer</h2>
+  <p>Break a big problem into smaller ones, solve each one recursively, then put the results back together. Three steps every time:</p>
+  <span class="tag to">DIVIDE</span><span class="tag ti">CONQUER</span><span class="tag th">hard</span>
+
+  <div class="card" style="border-color:rgba(232,137,74,0.3);margin-top:14px;">
+    <div class="card-title">the 3-step pattern (every D&amp;C algo follows this)</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:8px;">
+      <div style="background:rgba(232,137,74,0.08);border:1px solid rgba(232,137,74,0.2);border-radius:7px;padding:12px;">
+        <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--orange);margin-bottom:5px;letter-spacing:1px;">DIVIDE</div>
+        <div style="font-size:12px;color:var(--muted);">split problem into 2+ smaller pieces</div>
+      </div>
+      <div style="background:rgba(91,142,240,0.08);border:1px solid rgba(91,142,240,0.2);border-radius:7px;padding:12px;">
+        <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--blue);margin-bottom:5px;letter-spacing:1px;">CONQUER</div>
+        <div style="font-size:12px;color:var(--muted);">solve each piece recursively</div>
+      </div>
+      <div style="background:rgba(76,174,122,0.08);border:1px solid rgba(76,174,122,0.2);border-radius:7px;padding:12px;">
+        <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--green);margin-bottom:5px;letter-spacing:1px;">COMBINE</div>
+        <div style="font-size:12px;color:var(--muted);">merge sub-solutions into final answer</div>
+      </div>
+    </div>
+  </div>
+
+  <h3>choose an algorithm</h3>
+  <div class="algo-btns">
+    <div class="algo-btn active" onclick="sa('merge')">Merge Sort</div>
+    <div class="algo-btn" onclick="sa('quick')">Quick Sort</div>
+    <div class="algo-btn" onclick="sa('hull')">Convex Hull</div>
+    <div class="algo-btn" onclick="sa('kth')">Kth Smallest</div>
+  </div>
+
+  <div id="algo-merge" class="ac active">
+    <div class="card">
+      <div class="card-title">Merge Sort</div>
+      <p><span style="color:var(--orange)">DIVIDE:</span> cut array at midpoint into left and right halves.</p>
+      <p><span style="color:var(--blue)">CONQUER:</span> recursively sort both halves independently.</p>
+      <p><span style="color:var(--green)">COMBINE:</span> merge two sorted halves — compare front elements, take smaller one.</p>
+    </div>
+    <div class="code"><span class="kw">void</span> <span class="fn">mergeSort</span>(int arr[], int l, int r) {
+    <span class="kw">if</span> (l >= r) <span class="kw">return</span>; <span class="cm">// base: 1 element, already sorted</span>
+    int mid = (l + r) / <span class="nm">2</span>; <span class="cm">// DIVIDE</span>
+    <span class="fn">mergeSort</span>(arr, l, mid);   <span class="cm">// CONQUER left</span>
+    <span class="fn">mergeSort</span>(arr, mid+<span class="nm">1</span>, r); <span class="cm">// CONQUER right</span>
+    <span class="fn">merge</span>(arr, l, mid, r);     <span class="cm">// COMBINE</span>
+}</div>
+    <table>
+      <tr><th>case</th><th>time</th><th>why</th></tr>
+      <tr><td>best</td><td class="g">O(n log n)</td><td>always splits in half</td></tr>
+      <tr><td>average</td><td class="g">O(n log n)</td><td>same structure every time</td></tr>
+      <tr><td>worst</td><td class="g">O(n log n)</td><td>input doesn't affect it!</td></tr>
+      <tr><td>space</td><td class="ok">O(n)</td><td>needs temp array for merging</td></tr>
+    </table>
+  </div>
+
+  <div id="algo-quick" class="ac">
+    <div class="card">
+      <div class="card-title">Quick Sort (D&amp;C view)</div>
+      <p><span style="color:var(--orange)">DIVIDE:</span> pick a pivot element, move smaller elements left, larger right. Pivot is now in its final position.</p>
+      <p><span style="color:var(--blue)">CONQUER:</span> recursively sort left side and right side.</p>
+      <p><span style="color:var(--green)">COMBINE:</span> nothing! array is already sorted in place.</p>
+    </div>
+    <div class="code"><span class="kw">void</span> <span class="fn">quickSort</span>(int arr[], int low, int high) {
+    <span class="kw">if</span> (low >= high) <span class="kw">return</span>; <span class="cm">// base case</span>
+    int pi = <span class="fn">partition</span>(arr, low, high); <span class="cm">// DIVIDE</span>
+    <span class="fn">quickSort</span>(arr, low, pi - <span class="nm">1</span>);   <span class="cm">// CONQUER left</span>
+    <span class="fn">quickSort</span>(arr, pi + <span class="nm">1</span>, high);  <span class="cm">// CONQUER right</span>
+    <span class="cm">// COMBINE: nothing needed!</span>
+}</div>
+    <table>
+      <tr><th>case</th><th>time</th><th>trigger</th></tr>
+      <tr><td>best / avg</td><td class="g">O(n log n)</td><td>pivot splits roughly in half</td></tr>
+      <tr><td>worst</td><td class="b">O(n^2)</td><td>already sorted input, bad pivot</td></tr>
+      <tr><td>space</td><td class="g">O(log n)</td><td>only call stack, no extra array</td></tr>
+    </table>
+  </div>
+
+  <div id="algo-hull" class="ac">
+    <div class="card">
+      <div class="card-title">Convex Hull — D&amp;C</div>
+      <p>Find the smallest convex polygon around all given points. Like stretching a rubber band around pins on a board.</p>
+      <p><span style="color:var(--orange)">DIVIDE:</span> find leftmost &amp; rightmost point, draw a line. Split remaining points into above-line and below-line groups.</p>
+      <p><span style="color:var(--blue)">CONQUER:</span> in each group, the point FARTHEST from the line must be on the hull. Split into two new sub-problems around that point.</p>
+      <p><span style="color:var(--green)">COMBINE:</span> connect all confirmed hull points in order.</p>
+    </div>
+    <div class="code"><span class="fn">hullRecurse</span>(points, A, B):
+    <span class="cm">// find points to the LEFT of line A->B</span>
+    leftSide = [P for P in points if <span class="fn">left_of</span>(A, B, P)]
+
+    <span class="kw">if</span> leftSide is empty:
+        B is a hull point  <span class="cm">// base case</span>
+        <span class="kw">return</span>
+
+    <span class="cm">// farthest point MUST be on hull (key insight)</span>
+    P = <span class="fn">farthest_from_line</span>(leftSide, A, B)
+
+    <span class="fn">hullRecurse</span>(points, A, P)  <span class="cm">// CONQUER left</span>
+    <span class="fn">hullRecurse</span>(points, P, B)  <span class="cm">// CONQUER right</span></div>
+    <p><strong style="color:var(--text)">Key insight:</strong> the farthest point from any line can never be inside the hull — it must be on the boundary.</p>
+  </div>
+
+  <div id="algo-kth" class="ac">
+    <div class="card">
+      <div class="card-title">Kth Smallest / Median Finding</div>
+      <p>Find the kth smallest element without sorting the whole array. Median = k at position n/2.</p>
+      <p><span style="color:var(--orange)">DIVIDE:</span> split array into two halves, count elements in left half.</p>
+      <p><span style="color:var(--blue)">CONQUER:</span> if k fits in left half, search only left. Otherwise search only right. Throw away half the problem each step!</p>
+      <p><span style="color:var(--green)">COMBINE:</span> return the found element directly — no merging needed.</p>
+    </div>
+    <table>
+      <tr><th>method</th><th>time</th><th>note</th></tr>
+      <tr><td>Sort then pick</td><td class="b">O(n log n)</td><td>wasteful — sorts everything just to find one element</td></tr>
+      <tr><td>D&amp;C split-by-half (this file)</td><td class="b">O(n log n)</td><td>still O(n log n) because it sorts each half — same cost as sorting!</td></tr>
+      <tr><td>Quickselect (best D&amp;C)</td><td class="g">O(n) average</td><td>uses partition like Quick Sort — truly faster, O(n²) worst case</td></tr>
+      <tr><td>Median of Medians</td><td class="g">O(n) worst</td><td>guaranteed O(n) but complex to implement</td></tr>
+    </table>
+    <div class="card" style="border-color:rgba(224,92,92,0.3);">
+      <div class="card-title" style="color:var(--red);">Note on our implementation</div>
+      <p style="margin:0;font-size:13px;">The version in dc.cpp sorts each left half at every recursive step, making it O(n log n) — the same as just sorting the array. The real O(n) solution is <strong style="color:var(--green)">Quickselect</strong>, which uses the partition step from Quick Sort without recursing on both sides.</p>
+    </div>
+  </div>
+</div>
+
+<!-- WATCH -->
+<div id="panel-watch" class="panel">
+  <h2>Watch &amp; Understand</h2>
+  <p>Good videos for this topic. Start with Merge Sort.</p>
+  <div id="ytEmbed" style="display:none;">
+    <iframe id="ytFrame" class="yt-embed" allowfullscreen></iframe>
+    <button class="btn" onclick="closeVid()" style="margin-bottom:14px;">close video</button>
+  </div>
+  <div class="yt-grid">
+    <div class="yt-card" onclick="playVid('https://www.youtube.com/embed/TzeBrDU-JaY')">
+      <div class="yt-thumb">&#9654;<div class="yt-play">&#9654;</div></div>
+      <div class="yt-info"><div class="yt-title">Merge Sort Step by Step</div><div class="yt-ch">mycodeschool</div></div>
+    </div>
+    <div class="yt-card" onclick="playVid('https://www.youtube.com/embed/Hoixgm4-P4M')">
+      <div class="yt-thumb">&#9654;<div class="yt-play">&#9654;</div></div>
+      <div class="yt-info"><div class="yt-title">Quick Sort Algorithm</div><div class="yt-ch">mycodeschool</div></div>
+    </div>
+    <div class="yt-card" onclick="playVid('https://www.youtube.com/embed/obWXjtg0L64')">
+      <div class="yt-thumb">&#9654;<div class="yt-play">&#9654;</div></div>
+      <div class="yt-info"><div class="yt-title">Divide &amp; Conquer Explained</div><div class="yt-ch">Abdul Bari</div></div>
+    </div>
+    <div class="yt-card" onclick="playVid('https://www.youtube.com/embed/kPRA0W1kECg')">
+      <div class="yt-thumb">&#9654;<div class="yt-play">&#9654;</div></div>
+      <div class="yt-info"><div class="yt-title">Convex Hull Algorithm</div><div class="yt-ch">William Fiset</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- VISUALIZE -->
+<div id="panel-visualize" class="panel">
+  <h2>Merge Sort Visualizer</h2>
+  <p>Watch every divide, base case, and combine step happen. Color-coded logs show exactly what the algorithm is doing.</p>
+  <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;align-items:center;">
+    <select id="vizInput"><option value="random">random</option><option value="sorted">sorted</option><option value="reverse">reverse</option><option value="nearly">nearly sorted</option></select>
+    <select id="vizSize"><option value="6">6 elements</option><option value="8" selected>8 elements</option><option value="10">10 elements</option></select>
+    <select id="vizSpeed"><option value="700">slow</option><option value="300" selected>normal</option><option value="80">fast</option></select>
+    <button class="btn btn-p" onclick="startViz()">&#9654; start</button>
+    <button class="btn" onclick="resetViz()">reset</button>
+  </div>
+  <div class="arr-row" id="vizArr"></div>
+  <div style="display:flex;gap:10px;margin-bottom:8px;flex-wrap:wrap;font-size:11px;font-family:'Space Mono',monospace;">
+    <span style="color:var(--orange)">&#9632; divide</span>
+    <span style="color:var(--blue)">&#9632; base case</span>
+    <span style="color:var(--green)">&#9632; combine</span>
+    <span style="color:var(--teal)">&#9632; result</span>
+  </div>
+  <div class="merge-log" id="vizLog"><span style="color:var(--dim);">steps appear here...</span></div>
+  <div class="viz-row">
+    <div class="viz-stat">splits: <b id="vcSplits">0</b></div>
+    <div class="viz-stat">comparisons: <b id="vcComp">0</b></div>
+    <div class="viz-stat">merges: <b id="vcMerge">0</b></div>
+    <div class="viz-stat">time: <b id="vcTime">0ms</b></div>
+  </div>
+  <div class="card" style="margin-top:4px;">
+    <div class="card-title" id="vizNote">select input type and click start</div>
+  </div>
+</div>
+
+<!-- COMPARE -->
+<div id="panel-compare" class="panel">
+  <h2>Merge Sort vs Quick Sort</h2>
+  <p>Both are D&amp;C. See how they differ on different input types.</p>
+  <div class="ibtns">
+    <div class="ibtn active" onclick="runCmp('random',this)">random</div>
+    <div class="ibtn" onclick="runCmp('sorted',this)">sorted</div>
+    <div class="ibtn" onclick="runCmp('reverse',this)">reverse</div>
+    <div class="ibtn" onclick="runCmp('nearly',this)">nearly sorted</div>
+    <div class="ibtn" onclick="runCmp('large',this)">large values</div>
+  </div>
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:18px;margin-bottom:14px;">
+    <div id="cmpRows"></div>
+  </div>
+  <div class="card">
+    <div class="card-title" id="cmpTitle">click an input type above</div>
+    <p id="cmpDetail" style="margin:0;"></p>
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="panel-game" class="panel">
+  <h2>&#9658; Game</h2>
+  <p>Two games. First one teaches Merge Sort hands-on. Second one is the Convex Hull challenge.</p>
+  <div class="game-tabs">
+    <div class="gtab active" onclick="switchGame('merge',this)">&#9654; Merge Sort Game</div>
+    <div class="gtab" onclick="switchGame('hull',this)">&#9632; Convex Hull Game</div>
+  </div>
+
+  <!-- MERGE SORT GAME -->
+  <div id="garea-merge" class="garea active">
+    <div class="card" style="margin-bottom:14px;">
+      <div class="card-title">how to play</div>
+      <p style="margin:0;font-size:13px;">
+        You are given an unsorted array. Your job is to manually perform Merge Sort.<br>
+        Step 1 -- split the array into left and right halves by clicking each element to assign it.<br>
+        Step 2 -- once both halves are sorted, merge them in order by clicking from smallest to largest.<br>
+        Doing it right = learning how Merge Sort actually works.
+      </p>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+      <select id="mgSize"><option value="6" selected>6 elements</option><option value="8">8 elements</option></select>
+      <button class="btn btn-p" onclick="initMergeGame()">new game</button>
+      <button class="btn" onclick="mgHint()">hint</button>
+      <button class="btn btn-b" onclick="mgAutoSplit()">auto split</button>
+    </div>
+
+    <div id="mgFeedback" class="fb"></div>
+
+    <div class="gstat">
+      <div class="gs">phase: <b id="mgPhase">splitting</b></div>
+      <div class="gs">mistakes: <b id="mgMistakes">0</b></div>
+      <div class="gs">score: <b id="mgScore">100</b></div>
+    </div>
+
+    <!-- PHASE 1: splitting -->
+    <div id="mgSplitArea">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:10px;">Click each number to assign it to LEFT or RIGHT half. Split at the midpoint.</p>
+      <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:8px;">original array:</div>
+      <div id="mgArr" class="arr-row" style="margin-bottom:20px;"></div>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:140px;">
+          <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--orange);margin-bottom:6px;">LEFT half (click to add)</div>
+          <div id="mgLeft" style="min-height:50px;padding:8px;border-radius:7px;border:2px dashed var(--border);display:flex;flex-wrap:wrap;gap:5px;align-items:center;"></div>
+        </div>
+        <div style="flex:1;min-width:140px;">
+          <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--blue);margin-bottom:6px;">RIGHT half (click to add)</div>
+          <div id="mgRight" style="min-height:50px;padding:8px;border-radius:7px;border:2px dashed var(--border);display:flex;flex-wrap:wrap;gap:5px;align-items:center;"></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+        <button class="btn btn-p" onclick="mgConfirmSplit()">confirm split --></button>
+        <button class="btn" onclick="mgClearSplit()">clear</button>
+      </div>
+    </div>
+
+    <!-- PHASE 2: merging -->
+    <div id="mgMergeArea" style="display:none;">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:10px;">Now merge! Click the numbers in sorted order (smallest to largest). Think of it as picking from two sorted piles.</p>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px;">
+        <div style="flex:1;min-width:120px;">
+          <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--orange);margin-bottom:6px;">left pile (sorted)</div>
+          <div id="mgLeftSorted" style="padding:8px;border-radius:7px;border:1px solid var(--border);background:var(--bg3);display:flex;flex-wrap:wrap;gap:5px;min-height:46px;align-items:center;"></div>
+        </div>
+        <div style="flex:1;min-width:120px;">
+          <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--blue);margin-bottom:6px;">right pile (sorted)</div>
+          <div id="mgRightSorted" style="padding:8px;border-radius:7px;border:1px solid var(--border);background:var(--bg3);display:flex;flex-wrap:wrap;gap:5px;min-height:46px;align-items:center;"></div>
+        </div>
+      </div>
+      <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--green);margin-bottom:6px;">merged result (click numbers above in order)</div>
+      <div id="mgMerged" style="min-height:50px;padding:8px;border-radius:7px;border:2px dashed var(--green);display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin-bottom:12px;"></div>
+      <button class="btn btn-g" onclick="mgCheckMerge()">check result --></button>
+    </div>
+  </div>
+
+  <!-- CONVEX HULL GAME -->
+  <div id="garea-hull" class="garea">
+    <div class="card" style="margin-bottom:14px;">
+      <div class="card-title">how to play</div>
+      <p style="margin:0;font-size:13px;">
+        Click anywhere on the canvas to place star points (place 6-15 points).<br>
+        Then click "I'm done placing" and try to click the outer points in clockwise order to draw the hull.<br>
+        Click "Show Answer" to see what the correct hull looks like. Green = on hull, yellow = inside.
+      </p>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center;">
+      <button class="btn btn-p" onclick="hullReset()">new canvas</button>
+      <button class="btn btn-b" onclick="hullDonePlacing()" id="hullDoneBtn">i'm done placing</button>
+      <button class="btn btn-g" onclick="hullShowAnswer()">show answer</button>
+      <button class="btn" onclick="hullClearLines()">clear my lines</button>
+      <span id="hullStatus" style="font-size:12px;color:var(--muted);font-family:'Space Mono',monospace;">click canvas to place points</span>
+    </div>
+    <div id="hullFb" class="fb"></div>
+    <canvas id="hullCanvas" height="360"></canvas>
+    <div class="hull-legend">
+      <span><span class="hl-dot" style="background:var(--yellow);"></span>your placed point</span>
+      <span><span class="hl-dot" style="background:var(--green);"></span>on the hull</span>
+      <span><span class="hl-dot" style="background:var(--blue);"></span>your hull line</span>
+      <span><span class="hl-dot" style="background:var(--orange);"></span>correct hull</span>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;">
+      <div class="viz-stat">points: <b id="hullPts">0</b></div>
+      <div class="viz-stat">hull size: <b id="hullSize">0</b></div>
+      <div class="viz-stat">your score: <b id="hullScore">--</b></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// explorer
+const ex=JSON.parse(localStorage.getItem('odyssey_ex')||'{"xp":0}');
+document.getElementById('navXP').textContent=ex.xp+' XP';
+const xpDone={};
+function awardXP(s){
+  if(xpDone[s])return;
+  const m={learn:10,watch:15,visualize:15,compare:15,game:25};
+  const pts=m[s]||0;if(!pts)return;
+  xpDone[s]=true;ex.xp=(ex.xp||0)+pts;
+  localStorage.setItem('odyssey_ex',JSON.stringify(ex));
+  document.getElementById('navXP').textContent=ex.xp+' XP';
+  const t=document.getElementById('xpToast');t.textContent='+'+pts+' XP';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);
+}
+function sw(id){
+  const ids=['learn','watch','visualize','compare','game'];
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',ids[i]===id));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  if(id==='compare')runCmp('random',document.querySelector('.ibtn.active'));
+  if(id==='game'){initMergeGame();initHullGame();}
+  awardXP(id);
+}
+function sa(n){
+  document.querySelectorAll('.algo-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.ac').forEach(c=>c.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('algo-'+n).classList.add('active');
+}
+function playVid(u){document.getElementById('ytFrame').src=u;document.getElementById('ytEmbed').style.display='block';document.getElementById('ytEmbed').scrollIntoView({behavior:'smooth'});}
+function closeVid(){document.getElementById('ytFrame').src='';document.getElementById('ytEmbed').style.display='none';}
+
+// array gen
+function gen(type,n){
+  let a=[];
+  if(type==='random')for(let i=0;i<n;i++)a.push(Math.floor(Math.random()*90)+10);
+  else if(type==='sorted')for(let i=1;i<=n;i++)a.push(Math.floor(i*90/n)+5);
+  else if(type==='reverse')for(let i=n;i>=1;i--)a.push(Math.floor(i*90/n)+5);
+  else if(type==='nearly'){for(let i=1;i<=n;i++)a.push(Math.floor(i*90/n)+5);for(let i=0;i<Math.max(1,Math.floor(n/5));i++){let x=Math.floor(Math.random()*n),y=Math.floor(Math.random()*n);[a[x],a[y]]=[a[y],a[x]];}}
+  else if(type==='large')for(let i=0;i<n;i++)a.push(Math.floor(Math.random()*9000)+1000);
+  return a;
+}
+
+// ── VISUALIZER ──
+let vRunning=false,vSplits=0,vComp=0,vMerge=0,vStart=0;
+function resetViz(){
+  vRunning=false;const n=parseInt(document.getElementById('vizSize').value);
+  const type=document.getElementById('vizInput').value;const arr=gen(type,n);
+  const c=document.getElementById('vizArr');c.innerHTML='';
+  arr.forEach(v=>{const b=document.createElement('div');b.className='abox';b.textContent=v;c.appendChild(b);});
+  document.getElementById('vizLog').innerHTML='<span style="color:var(--dim);">steps appear here...</span>';
+  ['vcSplits','vcComp','vcMerge'].forEach(id=>document.getElementById(id).textContent='0');
+  document.getElementById('vcTime').textContent='0ms';
+  vSplits=0;vComp=0;vMerge=0;
+  const notes={random:'random -- typical average case',sorted:'already sorted -- same performance, merge sort doesnt care!',reverse:'reverse sorted -- still O(n log n), this is merge sorts strength',nearly:'nearly sorted -- merge sort unaffected unlike insertion sort'};
+  document.getElementById('vizNote').textContent=notes[type]||'';
+}
+function addLog(msg,cls){
+  const log=document.getElementById('vizLog');
+  if(log.children[0]&&log.children[0].style.color)log.innerHTML='';
+  const d=document.createElement('div');d.className='ml-'+cls;d.textContent=msg;log.appendChild(d);log.scrollTop=log.scrollHeight;
+}
+async function startViz(){
+  if(vRunning)return;resetViz();vRunning=true;vStart=performance.now();
+  const n=parseInt(document.getElementById('vizSize').value);const type=document.getElementById('vizInput').value;
+  const arr=gen(type,n);const speed=parseInt(document.getElementById('vizSpeed').value);
+  const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+  const boxes=document.getElementById('vizArr').children;
+  const doMerge=async(a,l,m,r)=>{
+    const L=a.slice(l,m+1),R=a.slice(m+1,r+1);
+    addLog('COMBINE [ '+L.join(', ')+' ] + [ '+R.join(', ')+' ]','c');
+    let i=0,j=0,k=l;
+    while(i<L.length&&j<R.length){vComp++;document.getElementById('vcComp').textContent=vComp;if(L[i]<=R[j])a[k++]=L[i++];else a[k++]=R[j++];}
+    while(i<L.length)a[k++]=L[i++];while(j<R.length)a[k++]=R[j++];
+    vMerge++;document.getElementById('vcMerge').textContent=vMerge;
+    addLog('RESULT  [ '+a.slice(l,r+1).join(', ')+' ]','r');
+    for(let x=l;x<=r;x++){boxes[x].textContent=a[x];boxes[x].className='abox merging';}
+    await sleep(speed);for(let x=l;x<=r;x++)boxes[x].className='abox done';
+  };
+  const ms=async(a,l,r)=>{
+    if(!vRunning||l>=r)return;
+    const mid=Math.floor((l+r)/2);vSplits++;document.getElementById('vcSplits').textContent=vSplits;
+    addLog('DIVIDE  ['+l+'..'+r+'] -> ['+l+'..'+mid+'] + ['+(mid+1)+'..'+r+']  = [ '+a.slice(l,r+1).join(', ')+' ]','d');
+    for(let x=l;x<=r;x++)boxes[x].className='abox dividing';await sleep(speed);
+    if(l===r){addLog('BASE    ['+l+'] = '+a[l]+' -- single element','b');boxes[l].className='abox done';return;}
+    await ms(a,l,mid);await ms(a,mid+1,r);await doMerge(a,l,mid,r);
+  };
+  await ms(arr,0,n-1);
+  document.getElementById('vcTime').textContent=(performance.now()-vStart).toFixed(0)+'ms';
+  vRunning=false;awardXP('visualize_done');
+}
+
+// ── COMPARE ──
+function runCmp(type,btn){
+  document.querySelectorAll('#panel-compare .ibtn').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  const n=500,base=gen(type,n);
+  const merge=a=>{const ms=(a,l,r)=>{if(l>=r)return;const m=Math.floor((l+r)/2);ms(a,l,m);ms(a,m+1,r);const L=a.slice(l,m+1),R=a.slice(m+1,r+1);let i=0,j=0,k=l;while(i<L.length&&j<R.length)a[k++]=L[i]<=R[j]?L[i++]:R[j++];while(i<L.length)a[k++]=L[i++];while(j<R.length)a[k++]=R[j++];};ms(a,0,a.length-1);};
+  const quick=a=>{const qs=(a,l,h)=>{if(l>=h)return;let p=a[h],i=l-1;for(let j=l;j<h;j++)if(a[j]<=p){i++;[a[i],a[j]]=[a[j],a[i]];}[a[i+1],a[h]]=[a[h],a[i+1]];qs(a,l,i);qs(a,i+2,h);};qs(a,0,a.length-1);};
+  const a1=[...base];const t1=performance.now();merge(a1);const tM=performance.now()-t1;
+  const a2=[...base];const t2=performance.now();quick(a2);const tQ=performance.now()-t2;
+  const mx=Math.max(tM,tQ);
+  document.getElementById('cmpRows').innerHTML=`
+    <div class="brow"><div class="blbl">Merge Sort</div><div class="btrack"><div class="bfill" style="width:${(tM/mx*100).toFixed(0)}%;background:var(--green)">${tM.toFixed(2)}ms</div></div><div class="btime">${tM.toFixed(2)}ms</div></div>
+    <div class="brow"><div class="blbl">Quick Sort</div><div class="btrack"><div class="bfill" style="width:${(tQ/mx*100).toFixed(0)}%;background:var(--orange)">${tQ.toFixed(2)}ms</div></div><div class="btime">${tQ.toFixed(2)}ms</div></div>`;
+  const ins={random:'random: both fast. quick sort slightly faster (cache-friendly).',sorted:'sorted! quick sort hits O(n^2) -- bad pivot issue. merge sort wins easily.',reverse:'reverse: same issue for quick sort. merge sort is consistent.',nearly:'nearly sorted: both good. insertion sort would actually win here.',large:'large values: time complexity stays same. no change in relative performance.'};
+  document.getElementById('cmpTitle').textContent=ins[type]||'';
+  document.getElementById('cmpDetail').textContent='array size: '+n+'. merge = always O(n log n). quick = O(n log n) avg but O(n^2) worst.';
+}
+
+// ── MERGE SORT GAME ──
+let mgArr=[],mgLeftArr=[],mgRightArr=[],mgPhase='split',mgMistakes=0,mgScore=100;
+let mgClickTarget='left',mgLeftSorted=[],mgRightSorted=[],mgMergedArr=[],mgExpectedMerge=[];
+
+function initMergeGame(){
+  const n=parseInt(document.getElementById('mgSize').value);
+  mgArr=gen('random',n);mgLeftArr=[];mgRightArr=[];mgPhase='split';mgMistakes=0;mgScore=100;
+  document.getElementById('mgPhase').textContent='splitting';
+  document.getElementById('mgMistakes').textContent='0';
+  document.getElementById('mgScore').textContent='100';
+  document.getElementById('mgFeedback').className='fb';
+  document.getElementById('mgSplitArea').style.display='block';
+  document.getElementById('mgMergeArea').style.display='none';
+  renderMgArr();
+  document.getElementById('mgLeft').innerHTML='';
+  document.getElementById('mgRight').innerHTML='';
+  showFb('split the array into left and right halves. the midpoint is at index '+(Math.floor(mgArr.length/2)-1)+'','info');
+}
+
+function renderMgArr(){
+  const c=document.getElementById('mgArr');c.innerHTML='';
+  mgArr.forEach((v,i)=>{
+    const b=document.createElement('div');b.className='mg-box';b.textContent=v;
+    b.dataset.idx=i;b.dataset.val=v;
+    b.onclick=()=>mgClickNum(b);
+    c.appendChild(b);
+  });
+}
+
+function mgClickNum(b){
+  if(mgPhase!=='split')return;
+  const val=parseInt(b.dataset.val);const idx=parseInt(b.dataset.idx);
+  const mid=Math.floor(mgArr.length/2);
+  if(b.classList.contains('inleft')||b.classList.contains('inright'))return;
+  // determine correct side
+  const correctSide=idx<mid?'left':'right';
+  // player always assigns to the "next needed" side (alternating click = left, then right, etc.)
+  // simplified: player clicks and we put in left first then right
+  if(mgLeftArr.length<mid){
+    b.classList.add('inleft');
+    mgLeftArr.push({val,idx,el:b});
+    const c=document.getElementById('mgLeft');
+    const nb=document.createElement('div');nb.className='mg-box inleft';nb.textContent=val;c.appendChild(nb);
+    if(correctSide!=='left'){mgMistakes++;mgScore=Math.max(0,mgScore-10);document.getElementById('mgMistakes').textContent=mgMistakes;document.getElementById('mgScore').textContent=mgScore;showFb('not quite -- index '+idx+' belongs in the right half (midpoint is at index '+mid+')','bad');}
+    else showFb('good! index '+idx+' goes in left half','good');
+  } else {
+    b.classList.add('inright');
+    mgRightArr.push({val,idx,el:b});
+    const c=document.getElementById('mgRight');
+    const nb=document.createElement('div');nb.className='mg-box inright';nb.textContent=val;c.appendChild(nb);
+    if(correctSide!=='right'){mgMistakes++;mgScore=Math.max(0,mgScore-10);document.getElementById('mgMistakes').textContent=mgMistakes;document.getElementById('mgScore').textContent=mgScore;showFb('not quite -- index '+idx+' belongs in the left half','bad');}
+    else showFb('good! index '+idx+' goes in right half','good');
+  }
+}
+
+function mgClearSplit(){mgLeftArr=[];mgRightArr=[];renderMgArr();document.getElementById('mgLeft').innerHTML='';document.getElementById('mgRight').innerHTML='';}
+
+function mgAutoSplit(){
+  mgClearSplit();
+  const mid=Math.floor(mgArr.length/2);
+  mgArr.forEach((v,i)=>{
+    const el=document.getElementById('mgArr').children[i];
+    if(i<mid){el.classList.add('inleft');mgLeftArr.push({val:v,idx:i});const nb=document.createElement('div');nb.className='mg-box inleft';nb.textContent=v;document.getElementById('mgLeft').appendChild(nb);}
+    else{el.classList.add('inright');mgRightArr.push({val:v,idx:i});const nb=document.createElement('div');nb.className='mg-box inright';nb.textContent=v;document.getElementById('mgRight').appendChild(nb);}
+  });
+  showFb('auto-split done. now confirm to move to the merge step.','info');
+}
+
+function mgConfirmSplit(){
+  if(mgLeftArr.length===0||mgRightArr.length===0){showFb('assign all elements to left or right first!','bad');return;}
+  // sort each half (they are now sorted since merge sort would sort them recursively)
+  mgLeftSorted=[...mgLeftArr.map(x=>x.val)].sort((a,b)=>a-b);
+  mgRightSorted=[...mgRightArr.map(x=>x.val)].sort((a,b)=>a-b);
+  mgExpectedMerge=[...mgLeftSorted,...mgRightSorted].sort((a,b)=>a-b);
+  mgMergedArr=[];mgPhase='merge';
+  document.getElementById('mgPhase').textContent='merging';
+  document.getElementById('mgSplitArea').style.display='none';
+  document.getElementById('mgMergeArea').style.display='block';
+  // render sorted piles
+  const lc=document.getElementById('mgLeftSorted');lc.innerHTML='';
+  mgLeftSorted.forEach(v=>{const b=document.createElement('div');b.className='mg-box inleft';b.textContent=v;b.onclick=()=>mgPickNum(v,b,'left');lc.appendChild(b);});
+  const rc=document.getElementById('mgRightSorted');rc.innerHTML='';
+  mgRightSorted.forEach(v=>{const b=document.createElement('div');b.className='mg-box inright';b.textContent=v;b.onclick=()=>mgPickNum(v,b,'right');rc.appendChild(b);});
+  document.getElementById('mgMerged').innerHTML='';
+  showFb('now merge! click numbers from smallest to largest. take from left or right pile each time.','info');
+}
+
+function mgPickNum(val,el,side){
+  if(mgPhase!=='merge')return;
+  const expected=mgExpectedMerge[mgMergedArr.length];
+  if(val===expected){
+    el.classList.add('merged');el.onclick=null;
+    mgMergedArr.push(val);
+    const nb=document.createElement('div');nb.className='mg-box merged';nb.textContent=val;
+    document.getElementById('mgMerged').appendChild(nb);
+    showFb('correct! '+val+' is next in order','good');
+  } else {
+    mgMistakes++;mgScore=Math.max(0,mgScore-10);
+    document.getElementById('mgMistakes').textContent=mgMistakes;
+    document.getElementById('mgScore').textContent=mgScore;
+    el.classList.add('wrong');setTimeout(()=>el.classList.remove('wrong'),600);
+    showFb('wrong -- the next smallest is '+expected+', not '+val,'bad');
+  }
+}
+
+function mgCheckMerge(){
+  if(JSON.stringify(mgMergedArr)===JSON.stringify(mgExpectedMerge)){
+    showFb('PERFECT! you merged correctly. final array: [ '+mgMergedArr.join(', ')+' ] -- score: '+mgScore,'good');
+    awardXP('game');
+  } else {
+    showFb('not complete yet -- keep picking the smallest available number from either pile.','info');
+  }
+}
+
+function mgHint(){
+  if(mgPhase==='split'){
+    const mid=Math.floor(mgArr.length/2);
+    showFb('hint: elements at indices 0 to '+(mid-1)+' go LEFT. indices '+mid+' to '+(mgArr.length-1)+' go RIGHT.','info');
+  } else {
+    const next=mgExpectedMerge[mgMergedArr.length];
+    if(next!==undefined) showFb('hint: next number to pick is '+next,'info');
+  }
+}
+
+function showFb(msg,type){const el=document.getElementById('mgFeedback');el.className='fb '+type;el.textContent=msg;}
+
+// ── CONVEX HULL GAME ──
+let hullPts=[],hullPhase='placing',hullUserLines=[],hullAlgoPts=[],hullCanvas,hullCtx;
+
+function initHullGame(){
+  hullCanvas=document.getElementById('hullCanvas');
+  hullCanvas.width=hullCanvas.offsetWidth;
+  hullCtx=hullCanvas.getContext('2d');
+  hullReset();
+}
+
+function hullReset(){
+  hullPts=[];hullPhase='placing';hullUserLines=[];hullAlgoPts=[];
+  document.getElementById('hullStatus').textContent='click canvas to place points';
+  document.getElementById('hullFb').className='fb';
+  document.getElementById('hullPts').textContent='0';
+  document.getElementById('hullSize').textContent='0';
+  document.getElementById('hullScore').textContent='--';
+  document.getElementById('hullDoneBtn').style.opacity='1';
+  if(hullCanvas){hullCanvas.width=hullCanvas.offsetWidth;}
+  drawHull();
+}
+
+hullCanvas=document.getElementById('hullCanvas');
+hullCanvas.addEventListener('click',e=>{
+  if(hullPhase!=='placing')return;
+  const r=hullCanvas.getBoundingClientRect();
+  hullPts.push({x:e.clientX-r.left,y:e.clientY-r.top});
+  document.getElementById('hullPts').textContent=hullPts.length;
+  if(hullPts.length>=4) document.getElementById('hullStatus').textContent=hullPts.length+' points. click "i\'m done placing" when ready.';
+  drawHull();
+});
+
+function hullDonePlacing(){
+  if(hullPts.length<3){hullShowFb('place at least 3 points first!','bad');return;}
+  hullPhase='drawing';
+  document.getElementById('hullStatus').textContent='now click the algorithm answer, or try to identify hull points yourself.';
+  document.getElementById('hullDoneBtn').style.opacity='0.4';
+}
+
+function hullShowAnswer(){
+  if(hullPts.length<3){hullShowFb('place at least 3 points first!','bad');return;}
+  hullAlgoPts=computeHull(hullPts);
+  document.getElementById('hullSize').textContent=hullAlgoPts.length;
+  const score=Math.round(hullAlgoPts.length/hullPts.length*100);
+  document.getElementById('hullScore').textContent=score+'%';
+  hullShowFb(hullAlgoPts.length+' of '+hullPts.length+' points are on the boundary. green = on hull, yellow = inside.','good');
+  drawHull();
+  awardXP('game');
+}
+
+function hullClearLines(){hullUserLines=[];drawHull();}
+
+function computeHull(pts){
+  if(pts.length<3)return pts;
+  const s=[...pts].sort((a,b)=>a.x-b.x||a.y-b.y);
+  const cross=(O,A,B)=>(A.x-O.x)*(B.y-O.y)-(A.y-O.y)*(B.x-O.x);
+  const lo=[],hi=[];
+  for(const p of s){while(lo.length>=2&&cross(lo[lo.length-2],lo[lo.length-1],p)<=0)lo.pop();lo.push(p);}
+  for(let i=s.length-1;i>=0;i--){const p=s[i];while(hi.length>=2&&cross(hi[hi.length-2],hi[hi.length-1],p)<=0)hi.pop();hi.push(p);}
+  hi.pop();lo.pop();return lo.concat(hi);
+}
+
+function drawHull(){
+  if(!hullCanvas)return;
+  const ctx=hullCanvas.getContext('2d');
+  ctx.clearRect(0,0,hullCanvas.width,hullCanvas.height);
+  // grid
+  ctx.fillStyle='rgba(255,255,255,0.03)';
+  for(let x=20;x<hullCanvas.width;x+=28)for(let y=20;y<hullCanvas.height;y+=28){ctx.beginPath();ctx.arc(x,y,1,0,Math.PI*2);ctx.fill();}
+  // algo hull fill
+  if(hullAlgoPts.length>2){
+    ctx.beginPath();ctx.moveTo(hullAlgoPts[0].x,hullAlgoPts[0].y);
+    hullAlgoPts.forEach(p=>ctx.lineTo(p.x,p.y));ctx.closePath();
+    ctx.fillStyle='rgba(232,137,74,0.06)';ctx.fill();
+    ctx.strokeStyle='rgba(232,137,74,0.5)';ctx.lineWidth=1.5;ctx.setLineDash([5,4]);ctx.stroke();ctx.setLineDash([]);
+  }
+  // points
+  hullPts.forEach(p=>{
+    const onHull=hullAlgoPts.some(h=>Math.abs(h.x-p.x)<4&&Math.abs(h.y-p.y)<4);
+    ctx.beginPath();ctx.arc(p.x,p.y,onHull?7:5,0,Math.PI*2);
+    ctx.fillStyle=onHull?'#4cae7a':'#e6b84a';ctx.fill();
+    ctx.strokeStyle=onHull?'#3a9e6a':'#d4a83a';ctx.lineWidth=1.5;ctx.stroke();
+  });
+}
+
+function hullShowFb(msg,type){const el=document.getElementById('hullFb');el.className='fb '+type;el.textContent=msg;}
+function switchGame(g,btn){document.querySelectorAll('.gtab').forEach(t=>t.classList.remove('active'));btn.classList.add('active');document.querySelectorAll('.garea').forEach(a=>a.classList.remove('active'));document.getElementById('garea-'+g).classList.add('active');}
+
+window.addEventListener('resize',()=>{if(hullCanvas){hullCanvas.width=hullCanvas.offsetWidth;drawHull();}});
+resetViz();runCmp('random',null);initMergeGame();initHullGame();
+</script>
+</body>
+</html>

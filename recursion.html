@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ch 2 — Recursion | Algorithm Odyssey</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0b1120;--bg2:#0f1829;--bg3:#162035;--border:rgba(45,212,191,0.12);
+    --cyan:#2dd4bf;--purple:#6366f1;--green:#34d399;--yellow:#2dd4bf;
+    --red:#f87171;--pink:#2dd4bf;--text:#e2e8f0;--muted:#64748b;--dim:#334155;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:15px;line-height:1.6;}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;border-bottom:1px solid var(--border);background:var(--bg);position:sticky;top:0;z-index:50;}
+  .nav-back{color:var(--pink);text-decoration:none;font-size:13px;font-family:'Space Mono',monospace;letter-spacing:1px;}
+  .nav-back:hover{opacity:0.7;}
+  .nav-title{font-family:'Space Mono',monospace;font-size:13px;color:var(--muted);}
+  .nav-xp{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:4px 12px;font-size:12px;color:var(--yellow);font-family:'Space Mono',monospace;}
+  .tabs{display:flex;gap:0;border-bottom:1px solid var(--border);background:var(--bg);padding:0 28px;overflow-x:auto;}
+  .tab{padding:14px 20px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all 0.2s;user-select:none;}
+  .tab:hover{color:var(--text);}
+  .tab.active{color:var(--pink);border-bottom-color:var(--pink);}
+  .panel{display:none;padding:32px 28px;max-width:900px;margin:0 auto;}
+  .panel.active{display:block;}
+  h2{font-family:'Space Mono',monospace;font-size:20px;color:var(--text);margin-bottom:8px;}
+  h3{font-family:'Space Mono',monospace;font-size:15px;color:var(--pink);margin-bottom:10px;margin-top:28px;}
+  p{color:#94a3b8;margin-bottom:14px;}
+  .tag{display:inline-block;padding:2px 10px;border-radius:4px;font-size:11px;font-weight:600;letter-spacing:1px;font-family:'Space Mono',monospace;margin-right:6px;margin-bottom:6px;}
+  .tag-pink{background:rgba(244,114,182,0.1);color:var(--pink);border:1px solid rgba(244,114,182,0.2);}
+  .tag-info{background:rgba(56,189,248,0.1);color:var(--cyan);border:1px solid rgba(56,189,248,0.2);}
+  .tag-med{background:rgba(251,191,36,0.1);color:var(--yellow);border:1px solid rgba(251,191,36,0.2);}
+  .card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:16px;}
+  .card-title{font-family:'Space Mono',monospace;font-size:13px;color:var(--text);margin-bottom:8px;font-weight:700;}
+  table{width:100%;border-collapse:collapse;margin-bottom:16px;}
+  th{background:var(--bg3);padding:10px 14px;text-align:left;font-size:12px;font-family:'Space Mono',monospace;color:var(--muted);font-weight:400;border:1px solid var(--border);}
+  td{padding:10px 14px;border:1px solid var(--border);font-size:13px;color:var(--text);}
+  tr:nth-child(even) td{background:rgba(255,255,255,0.02);}
+  .good{color:var(--green);font-family:'Space Mono',monospace;font-size:12px;}
+  .ok{color:var(--yellow);font-family:'Space Mono',monospace;font-size:12px;}
+  .bad{color:var(--red);font-family:'Space Mono',monospace;font-size:12px;}
+  .algo-btns{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px;}
+  .algo-btn{padding:8px 16px;border-radius:6px;border:1px solid var(--border);background:var(--bg2);color:var(--muted);font-size:13px;cursor:pointer;transition:all 0.15s;}
+  .algo-btn:hover{border-color:var(--pink);color:var(--text);}
+  .algo-btn.active{border-color:var(--pink);color:var(--pink);background:rgba(244,114,182,0.08);}
+  .algo-content{display:none;}
+  .algo-content.active{display:block;}
+  .code-block{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:16px;font-family:'Space Mono',monospace;font-size:12px;color:#94a3b8;line-height:1.8;overflow-x:auto;white-space:pre;margin-bottom:16px;}
+  .code-block .kw{color:#c084fc;}.code-block .fn{color:#2dd4bf;}.code-block .cm{color:#475569;font-style:italic;}.code-block .num{color:#fb923c;}
+  select,.btn{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:8px 14px;color:var(--text);font-size:13px;font-family:'Inter',sans-serif;cursor:pointer;outline:none;transition:border-color 0.2s;}
+  select:hover,.btn:hover{border-color:var(--pink);}
+  .btn-primary{background:var(--pink);color:var(--bg);font-weight:600;border-color:var(--pink);}
+  .btn-primary:hover{opacity:0.85;}
+  .btn-cyan{background:var(--cyan);color:var(--bg);font-weight:600;border-color:var(--cyan);}
+  .yt-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  @media(max-width:640px){.yt-grid{grid-template-columns:1fr;}}
+  .yt-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;cursor:pointer;transition:border-color 0.2s;}
+  .yt-card:hover{border-color:var(--pink);}
+  .yt-thumb{width:100%;aspect-ratio:16/9;background:var(--bg3);display:flex;align-items:center;justify-content:center;position:relative;}
+  .yt-play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.4);font-size:36px;}
+  .yt-info{padding:12px 14px;}
+  .yt-title{font-size:13px;font-weight:500;margin-bottom:4px;}
+  .yt-channel{font-size:11px;color:var(--muted);}
+  .yt-embed{width:100%;aspect-ratio:16/9;border:none;border-radius:10px;margin-bottom:16px;}
+
+  /* HANOI GAME */
+  #hanoiGame{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:24px;margin-bottom:20px;}
+  .peg-area{display:flex;justify-content:space-around;align-items:flex-end;height:220px;padding:0 20px;margin-bottom:16px;position:relative;}
+  .peg-col{display:flex;flex-direction:column;align-items:center;position:relative;width:30%;}
+  .peg-rod{width:6px;height:160px;background:var(--dim);border-radius:3px;position:absolute;bottom:0;}
+  .peg-base{width:100%;height:10px;background:var(--dim);border-radius:4px;}
+  .peg-label{font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:2px;}
+  .disk{border-radius:4px;height:22px;display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:11px;font-weight:700;cursor:pointer;transition:all 0.2s;color:var(--bg);margin-bottom:2px;position:relative;z-index:1;}
+  .disk:hover{filter:brightness(1.2);}
+  .disk.selected{box-shadow:0 0 16px rgba(251,191,36,0.6);transform:translateY(-8px);}
+  .disk-colors{--d1:#f87171;--d2:#fb923c;--d3:#fbbf24;--d4:#34d399;--d5:#2dd4bf;}
+
+  .hanoi-controls{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px;}
+  .hanoi-stats{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px;}
+  .h-stat{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 14px;font-size:12px;font-family:'Space Mono',monospace;}
+  .h-stat b{color:var(--pink);}
+  .feedback{padding:12px 16px;border-radius:8px;font-size:13px;font-weight:500;margin-bottom:14px;display:none;}
+  .feedback.good{background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.2);color:var(--green);display:block;}
+  .feedback.bad{background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.2);color:var(--red);display:block;}
+  .feedback.info{background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.2);color:var(--cyan);display:block;}
+
+  /* CALL STACK VISUAL */
+  #callStack{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px;min-height:80px;font-family:'Space Mono',monospace;font-size:11px;margin-bottom:12px;}
+  .stack-frame{background:rgba(244,114,182,0.1);border:1px solid rgba(244,114,182,0.2);border-radius:4px;padding:6px 10px;margin-bottom:4px;color:var(--pink);animation:slideIn 0.2s ease;}
+  @keyframes slideIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+
+  /* RECURSION TREE */
+  #treeCanvas{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;display:block;}
+
+  /* COMPARE CHART */
+  .bar-row{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+  .bar-label{font-size:12px;font-family:'Space Mono',monospace;color:var(--muted);width:130px;flex-shrink:0;}
+  .bar-track{flex:1;background:var(--bg3);border-radius:4px;height:28px;overflow:hidden;}
+  .bar-fill{height:100%;border-radius:4px;display:flex;align-items:center;padding-left:8px;font-size:11px;font-family:'Space Mono',monospace;color:var(--bg);font-weight:700;transition:width 0.8s ease;width:0%;}
+  .bar-time{font-size:11px;color:var(--muted);font-family:'Space Mono',monospace;width:70px;text-align:right;}
+  .input-btns{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;}
+  .input-btn{padding:7px 14px;border-radius:6px;border:1px solid var(--border);background:var(--bg2);color:var(--muted);font-size:12px;cursor:pointer;transition:all 0.15s;font-family:'Space Mono',monospace;}
+  .input-btn:hover{border-color:var(--pink);color:var(--text);}
+  .input-btn.active{border-color:var(--pink);color:var(--pink);background:rgba(244,114,182,0.08);}
+
+  #xpToast{position:fixed;top:70px;right:24px;background:var(--bg2);border:1px solid var(--yellow);border-radius:10px;padding:14px 20px;font-family:'Space Mono',monospace;font-size:14px;color:var(--yellow);z-index:999;transform:translateX(120%);transition:transform 0.3s;box-shadow:0 8px 32px rgba(0,0,0,0.4);}
+  #xpToast.show{transform:translateX(0);}
+  ::-webkit-scrollbar{width:6px;height:6px;}
+  ::-webkit-scrollbar-track{background:var(--bg);}
+  ::-webkit-scrollbar-thumb{background:var(--dim);border-radius:3px;}
+</style>
+</head>
+<body>
+<div id="xpToast">+0 XP earned!</div>
+
+<nav>
+  <a href="index.html" class="nav-back">← Back</a>
+  <span class="nav-title">Ch 2 — Recursion</span>
+  <div class="nav-xp" id="navXP">0 XP</div>
+</nav>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('learn')">📖 Learn</div>
+  <div class="tab" onclick="switchTab('watch')">🎬 Watch</div>
+  <div class="tab" onclick="switchTab('visualize')">🌳 Visualize</div>
+  <div class="tab" onclick="switchTab('compare')">⚖️ Compare</div>
+  <div class="tab" onclick="switchTab('game')">🎮 Game</div>
+</div>
+
+<!-- ══ LEARN ══ -->
+<div id="panel-learn" class="panel active">
+  <h2>Recursion</h2>
+  <p>A function that calls itself is called recursive. Every recursive function has two parts — a base case (when to stop) and a recursive case (call itself with a smaller problem).</p>
+  <span class="tag tag-pink">Level 2</span>
+  <span class="tag tag-info">Call Stack</span>
+  <span class="tag tag-med">Base Case</span>
+
+  <h3>Pick a topic</h3>
+  <div class="algo-btns">
+    <div class="algo-btn active" onclick="showAlgo('hanoi')">Tower of Hanoi</div>
+    <div class="algo-btn" onclick="showAlgo('fib')">Fibonacci</div>
+    <div class="algo-btn" onclick="showAlgo('fact')">Factorial</div>
+    <div class="algo-btn" onclick="showAlgo('bs')">Binary Search</div>
+  </div>
+
+  <!-- HANOI -->
+  <div id="algo-hanoi" class="algo-content active">
+    <div class="card">
+      <div class="card-title">Tower of Hanoi</div>
+      <p>Move n disks from peg A to peg C using peg B as helper. Rules: only move one disk at a time, never place a larger disk on a smaller one.</p>
+      <p><strong style="color:var(--text)">D&C insight:</strong> To move n disks from A to C — move top (n-1) disks to B, move largest to C, move (n-1) disks from B to C.</p>
+    </div>
+    <div class="code-block"><span class="kw">void</span> <span class="fn">hanoi</span>(int n, char from, char to, char aux) {
+    <span class="cm">// Base case: only one disk — just move it</span>
+    <span class="kw">if</span> (n == <span class="num">1</span>) {
+        cout &lt;&lt; "Move disk 1: " &lt;&lt; from &lt;&lt; " -> " &lt;&lt; to;
+        <span class="kw">return</span>;
+    }
+    <span class="cm">// Step 1: move top n-1 disks from A to B</span>
+    <span class="fn">hanoi</span>(n-<span class="num">1</span>, from, aux, to);
+    <span class="cm">// Step 2: move largest disk from A to C</span>
+    cout &lt;&lt; "Move disk " &lt;&lt; n &lt;&lt; ": " &lt;&lt; from &lt;&lt; " -> " &lt;&lt; to;
+    <span class="cm">// Step 3: move n-1 disks from B to C</span>
+    <span class="fn">hanoi</span>(n-<span class="num">1</span>, aux, to, from);
+}</div>
+    <table>
+      <tr><th>Disks (n)</th><th>Moves needed</th><th>Formula</th></tr>
+      <tr><td>1</td><td class="good">1</td><td>2¹ - 1</td></tr>
+      <tr><td>2</td><td class="good">3</td><td>2² - 1</td></tr>
+      <tr><td>3</td><td class="ok">7</td><td>2³ - 1</td></tr>
+      <tr><td>4</td><td class="ok">15</td><td>2⁴ - 1</td></tr>
+      <tr><td>10</td><td class="bad">1023</td><td>2¹⁰ - 1</td></tr>
+      <tr><td>Space</td><td colspan="2">O(n) — call stack depth = n</td></tr>
+    </table>
+    <p><strong style="color:var(--text)">Key insight:</strong> Each disk added DOUBLES the moves. This is O(2ⁿ) — exponential growth!</p>
+  </div>
+
+  <!-- FIB -->
+  <div id="algo-fib" class="algo-content">
+    <div class="card">
+      <div class="card-title">Fibonacci — Recursive vs Iterative</div>
+      <p>fib(n) = fib(n-1) + fib(n-2). Each number is the sum of the previous two. Sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21...</p>
+      <p><strong style="color:var(--text)">Problem:</strong> Recursive Fibonacci recalculates the same subproblems MANY times. fib(5) calls fib(3) twice!</p>
+    </div>
+    <div class="code-block"><span class="cm">// Recursive — simple but SLOW</span>
+<span class="kw">int</span> <span class="fn">fibRecursive</span>(int n) {
+    <span class="kw">if</span> (n &lt;= <span class="num">1</span>) <span class="kw">return</span> n; <span class="cm">// base case</span>
+    <span class="kw">return</span> <span class="fn">fibRecursive</span>(n-<span class="num">1</span>) + <span class="fn">fibRecursive</span>(n-<span class="num">2</span>);
+}
+
+<span class="cm">// Iterative — FAST, O(n) time, O(1) space</span>
+<span class="kw">int</span> <span class="fn">fibIterative</span>(int n) {
+    <span class="kw">if</span> (n &lt;= <span class="num">1</span>) <span class="kw">return</span> n;
+    int a = <span class="num">0</span>, b = <span class="num">1</span>;
+    <span class="kw">for</span> (int i = <span class="num">2</span>; i &lt;= n; i++) {
+        int c = a + b;
+        a = b; b = c;
+    }
+    <span class="kw">return</span> b;
+}</div>
+    <table>
+      <tr><th>Method</th><th>Time</th><th>Space</th><th>Calls for fib(10)</th></tr>
+      <tr><td>Recursive</td><td class="bad">O(2ⁿ)</td><td class="ok">O(n)</td><td class="bad">177</td></tr>
+      <tr><td>Iterative</td><td class="good">O(n)</td><td class="good">O(1)</td><td class="good">1 loop</td></tr>
+    </table>
+    <p><strong style="color:var(--text)">Lesson:</strong> Recursion is elegant but can be very inefficient. Dynamic Programming (Ch 6) solves this by storing results.</p>
+  </div>
+
+  <!-- FACT -->
+  <div id="algo-fact" class="algo-content">
+    <div class="card">
+      <div class="card-title">Factorial</div>
+      <p>n! = n × (n-1) × (n-2) × ... × 1. Example: 5! = 5 × 4 × 3 × 2 × 1 = 120.</p>
+      <p><strong style="color:var(--text)">Why it's a perfect recursion example:</strong> A problem clearly defined in terms of a smaller version of itself.</p>
+    </div>
+    <div class="code-block"><span class="kw">int</span> <span class="fn">factorial</span>(int n) {
+    <span class="cm">// Base case — stop here</span>
+    <span class="kw">if</span> (n == <span class="num">0</span> || n == <span class="num">1</span>) <span class="kw">return</span> <span class="num">1</span>;
+
+    <span class="cm">// Recursive case — n! = n * (n-1)!</span>
+    <span class="kw">return</span> n * <span class="fn">factorial</span>(n - <span class="num">1</span>);
+}
+
+<span class="cm">// Call stack for factorial(4):</span>
+<span class="cm">// factorial(4) -> 4 * factorial(3)</span>
+<span class="cm">//   factorial(3) -> 3 * factorial(2)</span>
+<span class="cm">//     factorial(2) -> 2 * factorial(1)</span>
+<span class="cm">//       factorial(1) -> returns 1  [BASE CASE]</span>
+<span class="cm">//     factorial(2) returns 2</span>
+<span class="cm">//   factorial(3) returns 6</span>
+<span class="cm">// factorial(4) returns 24</span></div>
+    <table>
+      <tr><th>n</th><th>n!</th><th>Call stack depth</th></tr>
+      <tr><td>5</td><td class="good">120</td><td>5</td></tr>
+      <tr><td>10</td><td class="ok">3,628,800</td><td>10</td></tr>
+      <tr><td>20</td><td class="bad">2.4 × 10¹⁸</td><td>20</td></tr>
+    </table>
+  </div>
+
+  <!-- BINARY SEARCH -->
+  <div id="algo-bs" class="algo-content">
+    <div class="card">
+      <div class="card-title">Binary Search (Recursive)</div>
+      <p>Find a target in a sorted array. Look at the middle — if target is smaller, search left half; if larger, search right half. Each call throws away half the array!</p>
+    </div>
+    <div class="code-block"><span class="kw">int</span> <span class="fn">binarySearch</span>(int arr[], int low, int high, int target) {
+    <span class="cm">// Base case: search space empty</span>
+    <span class="kw">if</span> (low > high) <span class="kw">return</span> -<span class="num">1</span>;
+
+    int mid = (low + high) / <span class="num">2</span>;
+
+    <span class="kw">if</span> (arr[mid] == target) <span class="kw">return</span> mid;  <span class="cm">// found!</span>
+    <span class="kw">if</span> (arr[mid] > target)               <span class="cm">// target is in left half</span>
+        <span class="kw">return</span> <span class="fn">binarySearch</span>(arr, low, mid-<span class="num">1</span>, target);
+    <span class="kw">return</span> <span class="fn">binarySearch</span>(arr, mid+<span class="num">1</span>, high, target); <span class="cm">// right half</span>
+}</div>
+    <table>
+      <tr><th>Case</th><th>Time</th><th>Why</th></tr>
+      <tr><td>Best</td><td class="good">O(1)</td><td>Target is at mid on first check</td></tr>
+      <tr><td>Average / Worst</td><td class="good">O(log n)</td><td>Each call halves the search space</td></tr>
+      <tr><td>Space</td><td class="ok">O(log n)</td><td>Call stack depth = log n</td></tr>
+    </table>
+    <p><strong style="color:var(--text)">Key insight:</strong> 1000 elements needs only ~10 calls. 1 million elements needs only ~20 calls. That's the power of O(log n)!</p>
+  </div>
+</div>
+
+<!-- ══ WATCH ══ -->
+<div id="panel-watch" class="panel">
+  <h2>Watch &amp; Understand</h2>
+  <p>Visual explanations. Watch these before trying the visualizer.</p>
+  <div id="ytEmbed" style="display:none;">
+    <iframe id="ytFrame" class="yt-embed" allowfullscreen></iframe>
+    <button class="btn" onclick="closeVideo()" style="margin-bottom:20px;">✕ Close video</button>
+  </div>
+  <div class="yt-grid">
+    <div class="yt-card" onclick="playVideo('https://www.youtube.com/embed/rf6uf3jNjbo','Tower of Hanoi')">
+      <div class="yt-thumb" style="background:#162035;"><span style="font-size:28px;color:var(--muted);">▶</span><div class="yt-play">▶</div></div>
+      <div class="yt-info"><div class="yt-title">Tower of Hanoi Explained</div><div class="yt-channel">mycodeschool</div></div>
+    </div>
+    <div class="yt-card" onclick="playVideo('https://www.youtube.com/embed/zg-ddPbzcKM','Recursion intro')">
+      <div class="yt-thumb" style="background:#162035;"><span style="font-size:28px;color:var(--muted);">▶</span><div class="yt-play">▶</div></div>
+      <div class="yt-info"><div class="yt-title">Recursion — How it Works</div><div class="yt-channel">CS Dojo</div></div>
+    </div>
+    <div class="yt-card" onclick="playVideo('https://www.youtube.com/embed/tWNpiNUT8YA','Fibonacci tree')">
+      <div class="yt-thumb" style="background:#162035;"><span style="font-size:28px;color:var(--muted);">▶</span><div class="yt-play">▶</div></div>
+      <div class="yt-info"><div class="yt-title">Fibonacci Recursion Tree</div><div class="yt-channel">Abdul Bari</div></div>
+    </div>
+    <div class="yt-card" onclick="playVideo('https://www.youtube.com/embed/P3YID7liBug','Binary search')">
+      <div class="yt-thumb" style="background:#162035;"><span style="font-size:28px;color:var(--muted);">▶</span><div class="yt-play">▶</div></div>
+      <div class="yt-info"><div class="yt-title">Binary Search Recursion</div><div class="yt-channel">mycodeschool</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ VISUALIZE ══ -->
+<div id="panel-visualize" class="panel">
+  <h2>Recursion Tree Visualizer</h2>
+  <p>Watch how recursive calls branch out. Each box is one function call. Base cases are shown in green.</p>
+  <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px;">
+    <select id="vizAlgo">
+      <option value="fib">Fibonacci</option>
+      <option value="fact">Factorial</option>
+      <option value="hanoi">Tower of Hanoi</option>
+    </select>
+    <select id="vizN">
+      <option value="4">n = 4</option>
+      <option value="5" selected>n = 5</option>
+      <option value="6">n = 6</option>
+      <option value="7">n = 7</option>
+    </select>
+    <button class="btn btn-primary" onclick="drawTree()">▶ Draw Tree</button>
+    <button class="btn" onclick="clearTree()">↺ Clear</button>
+  </div>
+
+  <canvas id="treeCanvas" height="400"></canvas>
+
+  <div style="display:flex;gap:16px;margin-top:12px;flex-wrap:wrap;">
+    <div class="card" style="flex:1;min-width:160px;margin:0;">
+      <div class="card-title">Total calls</div>
+      <div style="font-size:24px;font-family:'Space Mono',monospace;color:var(--pink);" id="totalCalls">—</div>
+    </div>
+    <div class="card" style="flex:1;min-width:160px;margin:0;">
+      <div class="card-title">Max depth</div>
+      <div style="font-size:24px;font-family:'Space Mono',monospace;color:var(--cyan);" id="maxDepth">—</div>
+    </div>
+    <div class="card" style="flex:1;min-width:160px;margin:0;">
+      <div class="card-title">Result</div>
+      <div style="font-size:24px;font-family:'Space Mono',monospace;color:var(--green);" id="vizResult">—</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px;">
+    <div class="card-title" id="vizInsight">Select an algorithm and click Draw Tree</div>
+  </div>
+</div>
+
+<!-- ══ COMPARE ══ -->
+<div id="panel-compare" class="panel">
+  <h2>Compare Disk Counts</h2>
+  <p>See how Tower of Hanoi performance changes as disk count grows. This is what exponential time looks like in practice.</p>
+
+  <div id="compareChart" style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:20px;">
+    <div id="compareRows"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Fibonacci: Recursive vs Iterative</div>
+    <div id="fibCompare" style="margin-top:8px;"></div>
+  </div>
+
+  <div class="card" style="margin-top:16px;">
+    <div class="card-title">Key takeaway</div>
+    <p style="margin:0;">Recursion is clean and easy to write. But exponential time (O(2ⁿ)) means even n=30 can take seconds. Always check if an iterative solution exists!</p>
+  </div>
+</div>
+
+<!-- ══ GAME ══ -->
+<div id="panel-game" class="panel">
+  <h2>🎮 Tower of Hanoi Game</h2>
+  <p>Move all disks from peg A to peg C. Click a disk to select it, then click the destination peg. Try to do it in the minimum moves!</p>
+
+  <div id="hanoiGame">
+    <div class="hanoi-controls">
+      <select id="diskCount">
+        <option value="2">2 disks</option>
+        <option value="3" selected>3 disks</option>
+        <option value="4">4 disks</option>
+        <option value="5">5 disks</option>
+      </select>
+      <button class="btn btn-primary" onclick="initHanoi()">New Game</button>
+      <button class="btn" onclick="showHint()">💡 Hint</button>
+      <button class="btn btn-cyan" onclick="autoSolve()">⚡ Auto-Solve</button>
+    </div>
+
+    <div class="hanoi-stats">
+      <div class="h-stat">Moves: <b id="moveCount">0</b></div>
+      <div class="h-stat">Optimal: <b id="optMoves">7</b></div>
+      <div class="h-stat">Disks: <b id="diskNum">3</b></div>
+      <div class="h-stat">Formula: <b id="formula">2³ - 1</b></div>
+    </div>
+
+    <div id="hanoiFeedback" class="feedback"></div>
+
+    <div class="peg-area" id="pegArea">
+      <div class="peg-col" id="pegA" onclick="clickPeg('A')">
+        <div class="peg-rod"></div>
+        <div id="disksA" style="display:flex;flex-direction:column-reverse;align-items:center;width:100%;"></div>
+        <div class="peg-base"></div>
+        <div class="peg-label">A</div>
+      </div>
+      <div class="peg-col" id="pegB" onclick="clickPeg('B')">
+        <div class="peg-rod"></div>
+        <div id="disksB" style="display:flex;flex-direction:column-reverse;align-items:center;width:100%;"></div>
+        <div class="peg-base"></div>
+        <div class="peg-label">B</div>
+      </div>
+      <div class="peg-col" id="pegC" onclick="clickPeg('C')">
+        <div class="peg-rod"></div>
+        <div id="disksC" style="display:flex;flex-direction:column-reverse;align-items:center;width:100%;"></div>
+        <div class="peg-base"></div>
+        <div class="peg-label">C</div>
+      </div>
+    </div>
+
+    <div class="card-title" style="margin-bottom:8px;">Live Call Stack</div>
+    <div id="callStack"><div style="color:var(--dim);font-size:11px;">Call stack will show here during auto-solve...</div></div>
+  </div>
+</div>
+
+<script>
+// ══ EXPLORER ══
+const explorer = JSON.parse(localStorage.getItem('odyssey_explorer')||'{"xp":0}');
+document.getElementById('navXP').textContent = explorer.xp + ' XP';
+
+function switchTab(id) {
+  const ids=['learn','watch','visualize','compare','game'];
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',ids[i]===id));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  if(id==='compare') buildCompare();
+  if(id==='game') initHanoi();
+  awardXP(id);
+}
+
+const xpAwarded={};
+function awardXP(s){
+  if(xpAwarded[s]) return;
+  const m={learn:10,watch:15,visualize:15,compare:15,game:25};
+  const pts=m[s]||0; if(!pts) return;
+  xpAwarded[s]=true;
+  explorer.xp=(explorer.xp||0)+pts;
+  localStorage.setItem('odyssey_explorer',JSON.stringify(explorer));
+  document.getElementById('navXP').textContent=explorer.xp+' XP';
+  showToast('+'+pts+' XP earned!');
+}
+function showToast(msg){
+  const t=document.getElementById('xpToast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+function showAlgo(name){
+  document.querySelectorAll('.algo-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.algo-content').forEach(c=>c.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('algo-'+name).classList.add('active');
+}
+function playVideo(url){
+  document.getElementById('ytFrame').src=url;
+  document.getElementById('ytEmbed').style.display='block';
+  document.getElementById('ytEmbed').scrollIntoView({behavior:'smooth'});
+}
+function closeVideo(){
+  document.getElementById('ytFrame').src='';
+  document.getElementById('ytEmbed').style.display='none';
+}
+
+// ══ RECURSION TREE VISUALIZER ══
+let totalCallsCount=0, maxDepthCount=0;
+
+function clearTree(){
+  const canvas=document.getElementById('treeCanvas');
+  const ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  document.getElementById('totalCalls').textContent='—';
+  document.getElementById('maxDepth').textContent='—';
+  document.getElementById('vizResult').textContent='—';
+  document.getElementById('vizInsight').textContent='Select an algorithm and click Draw Tree';
+}
+
+function drawTree(){
+  const algo=document.getElementById('vizAlgo').value;
+  const n=parseInt(document.getElementById('vizN').value);
+  const canvas=document.getElementById('treeCanvas');
+  canvas.width=canvas.offsetWidth;
+  const ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  totalCallsCount=0; maxDepthCount=0;
+
+  if(algo==='fib'){
+    const tree=buildFibTree(n);
+    renderTree(ctx,tree,canvas.width/2,30,canvas.width/2.5,0);
+    document.getElementById('vizResult').textContent=tree.val;
+    document.getElementById('vizInsight').textContent=`fib(${n}) made ${totalCallsCount} calls. Notice the SAME subproblems calculated multiple times!`;
+  } else if(algo==='fact'){
+    const tree=buildFactTree(n);
+    renderLinearTree(ctx,tree,canvas.width/2,30);
+    document.getElementById('vizResult').textContent=tree.val;
+    document.getElementById('vizInsight').textContent=`factorial(${n}) = ${tree.val}. Only ${totalCallsCount} calls — clean linear recursion, depth = ${n}.`;
+  } else if(algo==='hanoi'){
+    document.getElementById('vizResult').textContent=Math.pow(2,n)-1+' moves';
+    document.getElementById('vizInsight').textContent=`hanoi(${n}) needs ${Math.pow(2,n)-1} moves. The tree has ${Math.pow(2,n+1)-1} nodes — exponential!`;
+    drawHanoiInfo(ctx,n,canvas.width,canvas.height);
+  }
+
+  document.getElementById('totalCalls').textContent=totalCallsCount;
+  document.getElementById('maxDepth').textContent=maxDepthCount;
+}
+
+function buildFibTree(n,depth=0){
+  totalCallsCount++; if(depth>maxDepthCount) maxDepthCount=depth;
+  if(n<=1) return {label:`fib(${n})`,val:n,base:true,children:[]};
+  const l=buildFibTree(n-1,depth+1), r=buildFibTree(n-2,depth+1);
+  return {label:`fib(${n})`,val:l.val+r.val,base:false,children:[l,r]};
+}
+
+function buildFactTree(n,depth=0){
+  totalCallsCount++; if(depth>maxDepthCount) maxDepthCount=depth;
+  if(n<=1) return {label:`fact(1)`,val:1,base:true,children:[]};
+  const child=buildFactTree(n-1,depth+1);
+  return {label:`fact(${n})`,val:n*child.val,base:false,children:[child]};
+}
+
+function renderTree(ctx,node,x,y,spread,depth){
+  if(!node) return;
+  const bw=54,bh=26,r=4;
+  // draw children first
+  node.children.forEach((child,i)=>{
+    const cx=x+(i===0?-spread:spread);
+    const cy=y+70;
+    ctx.beginPath();
+    ctx.moveTo(x,y+bh);
+    ctx.lineTo(cx,cy);
+    ctx.strokeStyle='#334155';
+    ctx.lineWidth=1;
+    ctx.stroke();
+    renderTree(ctx,child,cx,cy,spread*0.55,depth+1);
+  });
+  // draw box
+  ctx.fillStyle=node.base?'rgba(52,211,153,0.15)':'rgba(244,114,182,0.1)';
+  ctx.strokeStyle=node.base?'#34d399':'#2dd4bf';
+  ctx.lineWidth=1;
+  ctx.beginPath();
+  ctx.roundRect(x-bw/2,y,bw,bh,r);
+  ctx.fill(); ctx.stroke();
+  ctx.fillStyle=node.base?'#34d399':'#e2e8f0';
+  ctx.font='11px Space Mono, monospace';
+  ctx.textAlign='center';
+  ctx.fillText(node.label,x,y+17);
+}
+
+function renderLinearTree(ctx,node,x,y,depth=0){
+  if(!node) return;
+  const bw=80,bh=26;
+  if(node.children[0]){
+    const cy=y+60;
+    ctx.beginPath(); ctx.moveTo(x,y+bh); ctx.lineTo(x,cy);
+    ctx.strokeStyle='#334155'; ctx.lineWidth=1; ctx.stroke();
+    renderLinearTree(ctx,node.children[0],x,cy,depth+1);
+  }
+  ctx.fillStyle=node.base?'rgba(52,211,153,0.15)':'rgba(244,114,182,0.1)';
+  ctx.strokeStyle=node.base?'#34d399':'#2dd4bf';
+  ctx.lineWidth=1;
+  ctx.beginPath(); ctx.roundRect(x-bw/2,y,bw,bh,4); ctx.fill(); ctx.stroke();
+  ctx.fillStyle=node.base?'#34d399':'#e2e8f0';
+  ctx.font='11px Space Mono, monospace'; ctx.textAlign='center';
+  ctx.fillText(node.label,x,y+17);
+}
+
+function drawHanoiInfo(ctx,n,w,h){
+  ctx.fillStyle='#94a3b8'; ctx.font='13px Space Mono, monospace'; ctx.textAlign='center';
+  ctx.fillText(`hanoi(${n}) — exponential growth chart`,w/2,40);
+  const data=[];
+  for(let i=1;i<=Math.min(n+4,10);i++) data.push({n:i,moves:Math.pow(2,i)-1});
+  const maxM=data[data.length-1].moves;
+  const bw=Math.min(40,(w-80)/data.length);
+  data.forEach((d,i)=>{
+    const bh=(d.moves/maxM)*(h-120);
+    const bx=60+i*(bw+8);
+    const by=h-60-bh;
+    ctx.fillStyle=d.n===n?'#2dd4bf':'rgba(99,102,241,0.3)';
+    ctx.fillRect(bx,by,bw,bh);
+    ctx.fillStyle='#94a3b8'; ctx.font='10px Space Mono, monospace'; ctx.textAlign='center';
+    ctx.fillText('n='+d.n,bx+bw/2,h-42);
+    ctx.fillText(d.moves,bx+bw/2,by-5);
+  });
+}
+
+// ══ COMPARE ══
+function buildCompare(){
+  // Hanoi disk comparison
+  const rows=document.getElementById('compareRows');
+  rows.innerHTML='';
+  const colors=['#34d399','#34d399','#2dd4bf','#2dd4bf','#6366f1','#6366f1'];
+  for(let n=1;n<=6;n++){
+    const moves=Math.pow(2,n)-1;
+    const pct=(moves/63*100).toFixed(1);
+    rows.innerHTML+=`
+      <div class="bar-row">
+        <div class="bar-label">${n} disk${n>1?'s':''}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${colors[n-1]}">${moves} moves</div></div>
+        <div class="bar-time">2^${n}-1=${moves}</div>
+      </div>`;
+  }
+  // Fibonacci comparison
+  const fibDiv=document.getElementById('fibCompare');
+  fibDiv.innerHTML='';
+  const fibData=[
+    {n:5,rec:15,iter:1},{n:10,rec:177,iter:1},
+    {n:15,rec:1973,iter:1},{n:20,rec:21891,iter:1}
+  ];
+  const maxCalls=fibData[fibData.length-1].rec;
+  fibData.forEach(d=>{
+    const pct=(d.rec/maxCalls*100).toFixed(1);
+    fibDiv.innerHTML+=`
+      <div class="bar-row">
+        <div class="bar-label">fib(${d.n}) recursive</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:#6366f1">${d.rec} calls</div></div>
+        <div class="bar-time">${d.rec} calls</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">fib(${d.n}) iterative</div>
+        <div class="bar-track"><div class="bar-fill" style="width:2%;background:#34d399">1 loop</div></div>
+        <div class="bar-time">1 loop</div>
+      </div>`;
+  });
+}
+
+// ══ HANOI GAME ══
+let pegs={'A':[],'B':[],'C':[]};
+let selectedPeg=null, moveCount=0, autoRunning=false;
+const diskColors=['#f87171','#fb923c','#fbbf24','#34d399','#2dd4bf'];
+
+function initHanoi(){
+  autoRunning=false;
+  const n=parseInt(document.getElementById('diskCount').value);
+  pegs={'A':[],'B':[],'C':[]};
+  for(let i=n;i>=1;i--) pegs['A'].push(i);
+  selectedPeg=null; moveCount=0;
+  document.getElementById('moveCount').textContent='0';
+  document.getElementById('optMoves').textContent=Math.pow(2,n)-1;
+  document.getElementById('diskNum').textContent=n;
+  document.getElementById('formula').textContent=`2^${n} - 1`;
+  document.getElementById('hanoiFeedback').className='feedback';
+  document.getElementById('callStack').innerHTML='<div style="color:var(--dim);font-size:11px;">Move disks to see call stack...</div>';
+  renderPegs();
+}
+
+function renderPegs(){
+  ['A','B','C'].forEach(p=>{
+    const cont=document.getElementById('disks'+p);
+    cont.innerHTML='';
+    const n=parseInt(document.getElementById('diskCount').value);
+    pegs[p].forEach(size=>{
+      const d=document.createElement('div');
+      d.className='disk'+(p===selectedPeg&&pegs[p][pegs[p].length-1]===size?' selected':'');
+      const pct=40+size/n*55;
+      d.style.width=pct+'%';
+      d.style.background=diskColors[size-1]||'#6366f1'||'#6366f1'||'#a78bfa';
+      d.textContent=size;
+      cont.appendChild(d);
+    });
+  });
+}
+
+function clickPeg(peg){
+  if(autoRunning) return;
+  if(selectedPeg===null){
+    if(pegs[peg].length===0){ showHanoiFeedback('No disks here!','bad'); return; }
+    selectedPeg=peg;
+    renderPegs();
+    showHanoiFeedback(`Disk ${pegs[peg][pegs[peg].length-1]} selected from peg ${peg}. Click destination peg.`,'info');
+  } else {
+    if(peg===selectedPeg){ selectedPeg=null; renderPegs(); document.getElementById('hanoiFeedback').className='feedback'; return; }
+    const disk=pegs[selectedPeg][pegs[selectedPeg].length-1];
+    const top=pegs[peg].length>0?pegs[peg][pegs[peg].length-1]:Infinity;
+    if(disk<top){
+      pegs[selectedPeg].pop();
+      pegs[peg].push(disk);
+      moveCount++;
+      document.getElementById('moveCount').textContent=moveCount;
+      addStackFrame(`Move disk ${disk}: ${selectedPeg} → ${peg}`);
+      selectedPeg=null; renderPegs();
+      checkWin();
+    } else {
+      showHanoiFeedback(`Cannot place disk ${disk} on top of disk ${top}!`,'bad');
+      selectedPeg=null; renderPegs();
+    }
+  }
+}
+
+function addStackFrame(msg){
+  const cs=document.getElementById('callStack');
+  if(cs.children[0]&&cs.children[0].style.color) cs.innerHTML='';
+  const frame=document.createElement('div');
+  frame.className='stack-frame';
+  frame.textContent=msg;
+  cs.insertBefore(frame,cs.firstChild);
+  if(cs.children.length>6) cs.removeChild(cs.lastChild);
+}
+
+function showHanoiFeedback(msg,type='info'){
+  const el=document.getElementById('hanoiFeedback');
+  el.className='feedback '+type;
+  el.textContent=msg;
+}
+
+function checkWin(){
+  const n=parseInt(document.getElementById('diskCount').value);
+  if(pegs['C'].length===n){
+    const opt=Math.pow(2,n)-1;
+    const perfect=moveCount===opt;
+    showHanoiFeedback(perfect?`🏆 Perfect! Solved in exactly ${opt} moves (optimal)!`:`✅ Solved in ${moveCount} moves! Optimal was ${opt}.`,perfect?'good':'info');
+    awardXP('game');
+  }
+}
+
+function showHint(){
+  // find next optimal move using recursive solver
+  const n=parseInt(document.getElementById('diskCount').value);
+  const moves=[];
+  const solve=(k,f,t,a)=>{ if(k===0)return; solve(k-1,f,a,t); moves.push([f,t]); solve(k-1,a,t,f); };
+  // figure out current state
+  let stateA=[...pegs['A']], stateB=[...pegs['B']], stateC=[...pegs['C']];
+  const allMoves=[]; solve(n,'A','C','B');
+  // find the move that matches current state
+  for(const [from,to] of allMoves){
+    const f=from==='A'?stateA:from==='B'?stateB:stateC;
+    const t=to==='A'?stateA:to==='B'?stateB:stateC;
+    if(f.length>0){
+      const d=f[f.length-1];
+      const topT=t.length>0?t[t.length-1]:Infinity;
+      if(d<topT){ showHanoiFeedback(`💡 Hint: Move disk ${d} from peg ${from} to peg ${to}`,'info'); return; }
+    }
+  }
+  showHanoiFeedback('💡 Try moving the top disk to a valid peg!','info');
+}
+
+async function autoSolve(){
+  if(autoRunning) return;
+  initHanoi();
+  autoRunning=true;
+  document.getElementById('callStack').innerHTML='';
+  const n=parseInt(document.getElementById('diskCount').value);
+  const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+  const solve=async(k,f,t,a,depth)=>{
+    if(!autoRunning||k===0) return;
+    addStackFrame(`hanoi(${k}, ${f}→${t}) depth=${depth}`);
+    await solve(k-1,f,a,t,depth+1);
+    if(!autoRunning) return;
+    const disk=pegs[f][pegs[f].length-1];
+    pegs[f].pop(); pegs[t].push(disk);
+    moveCount++; document.getElementById('moveCount').textContent=moveCount;
+    renderPegs(); await sleep(400);
+    await solve(k-1,a,t,f,depth+1);
+  };
+  await solve(n,'A','C','B',0);
+  if(autoRunning){ checkWin(); autoRunning=false; }
+}
+
+initHanoi();
+buildCompare();
+</script>
+</body>
+</html>
