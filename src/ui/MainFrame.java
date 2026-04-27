@@ -14,6 +14,8 @@ import visualizers.SortingVisualizerPanel;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Root application frame.
@@ -37,6 +39,7 @@ public class MainFrame extends JFrame {
     private SidebarPanel     sidebar;
     private DashboardPanel   dashboardPanel;
     private LeaderboardPanel leaderboardPanel;
+    private final Map<String, Component> panels = new HashMap<>();
 
     public MainFrame() {
         super("AlgoVerse — Algorithm Visualizer & Learning Platform");
@@ -96,13 +99,13 @@ public class MainFrame extends JFrame {
         dashboardPanel   = new DashboardPanel(panel -> navigate(panel));
         leaderboardPanel = new LeaderboardPanel();
 
-        contentPanel.add(dashboardPanel,                 "DASHBOARD");
-        contentPanel.add(new SortingVisualizerPanel(),   "SORTING");
-        contentPanel.add(new PathfindingVisualizerPanel(),"PATHFINDING");
-        contentPanel.add(new DivideConquerPanel(),       "DIVIDE");
-        contentPanel.add(new GreedyGamePanel(),          "GREEDY");
-        contentPanel.add(new DPGamePanel(),              "DP");
-        contentPanel.add(leaderboardPanel,               "LEADERBOARD");
+        addPanel("DASHBOARD", dashboardPanel);
+        addPanel("SORTING", new SortingVisualizerPanel());
+        addPanel("PATHFINDING", new PathfindingVisualizerPanel());
+        addPanel("DIVIDE", new DivideConquerPanel());
+        addPanel("GREEDY", new GreedyGamePanel());
+        addPanel("DP", new DPGamePanel());
+        addPanel("LEADERBOARD", leaderboardPanel);
 
         // ── Shell ──────────────────────────────────────────────────────────
         JPanel shell = new JPanel(new BorderLayout());
@@ -114,6 +117,11 @@ public class MainFrame extends JFrame {
 
     // ── Navigation ────────────────────────────────────────────────────────────
 
+    private void addPanel(String name, Component panel) {
+        panels.put(name, panel);
+        contentPanel.add(panel, name);
+    }
+
     private void navigate(String panel) {
         if ("LOGIN".equals(panel)) {
             rootLayout.show(rootPanel, CARD_LOGIN);
@@ -121,6 +129,13 @@ public class MainFrame extends JFrame {
         }
         contentLayout.show(contentPanel, panel);
         sidebar.setActivePanel(panel);
+
+        Component active = panels.get(panel);
+        if (active instanceof AlgorithmModule am) {
+            sidebar.setAlgorithmOptions(am.getAlgorithms(), am::onAlgorithmSelected);
+        } else {
+            sidebar.setAlgorithmOptions(null, null);
+        }
 
         // Refresh data-dependent panels
         if ("DASHBOARD".equals(panel))   dashboardPanel.refresh();

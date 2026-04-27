@@ -2,6 +2,8 @@ package visualizers;
 
 import managers.SessionManager;
 import managers.UserManager;
+import ui.AlgorithmModule;
+import ui.components.AlgorithmInfoPanel;
 import ui.components.RoundedButton;
 import utils.ThemeManager;
 
@@ -15,7 +17,7 @@ import java.util.*;
  * Algorithms: BFS, DFS, Dijkstra, A*.
  * Click to place walls; right-click source/destination.
  */
-public class PathfindingVisualizerPanel extends JPanel {
+public class PathfindingVisualizerPanel extends JPanel implements AlgorithmModule {
 
     // ── Cell states ───────────────────────────────────────────────────────────
     private static final int EMPTY   = 0;
@@ -53,10 +55,14 @@ public class PathfindingVisualizerPanel extends JPanel {
 
     // ── UI ────────────────────────────────────────────────────────────────────
     private GridCanvas  gridCanvas;
-    private JComboBox<String> algoBox;
+    private String      currentAlgorithm = "BFS";
+    private AlgorithmInfoPanel infoPanel;
     private JLabel      statusLabel;
     private RoundedButton startBtn, resetBtn, clearBtn;
     private int drawMode = WALL; // left-click places this cell type
+    
+    private long accumulatedComputeTime = 0;
+    private static final String[] ALGOS = {"BFS", "DFS", "Dijkstra", "A*"};
 
     public PathfindingVisualizerPanel() {
         setBackground(ThemeManager.BG_PRIMARY);
@@ -68,6 +74,23 @@ public class PathfindingVisualizerPanel extends JPanel {
         add(buildHeader(),  BorderLayout.NORTH);
         add(buildGrid(),    BorderLayout.CENTER);
         add(buildControls(),BorderLayout.SOUTH);
+        
+        infoPanel = new AlgorithmInfoPanel();
+        add(infoPanel, BorderLayout.EAST);
+    }
+    
+    @Override
+    public String[] getAlgorithms() {
+        return ALGOS;
+    }
+
+    @Override
+    public void onAlgorithmSelected(String algorithm) {
+        this.currentAlgorithm = algorithm;
+        infoPanel.updateInfo(algorithm);
+        resetSearch();
+        clearVisited();
+        gridCanvas.repaint();
     }
 
     // ──────────────────────────────────────────────────────────────────────────
@@ -149,19 +172,7 @@ public class PathfindingVisualizerPanel extends JPanel {
         title.setFont(ThemeManager.FONT_LARGE);
         title.setForeground(ThemeManager.TEXT_PRIMARY);
 
-        String[] algos = {"BFS", "DFS", "Dijkstra", "A*"};
-        algoBox = new JComboBox<>(algos);
-        algoBox.setBackground(ThemeManager.BG_SURFACE);
-        algoBox.setForeground(ThemeManager.TEXT_PRIMARY);
-        algoBox.setFont(ThemeManager.FONT_NORMAL);
-
-        JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
-        right.setOpaque(false);
-        right.add(new JLabel("Algorithm:") {{ setForeground(ThemeManager.TEXT_SECONDARY); setFont(ThemeManager.FONT_SMALL); }});
-        right.add(algoBox);
-
         p.add(title, BorderLayout.WEST);
-        p.add(right,  BorderLayout.EAST);
         return p;
     }
 
@@ -243,7 +254,10 @@ public class PathfindingVisualizerPanel extends JPanel {
         running = true;
         statusLabel.setText("Searching…");
 
-        String algo = (String) algoBox.getSelectedItem();
+        accumulatedComputeTime = 0;
+        infoPanel.setComputeTime(0);
+
+        String algo = currentAlgorithm;
         if ("Dijkstra".equals(algo) || "A*".equals(algo)) {
             initDist();
         }
@@ -260,7 +274,8 @@ public class PathfindingVisualizerPanel extends JPanel {
             return;
         }
 
-        String algo = (String) algoBox.getSelectedItem();
+        long t0 = System.nanoTime();
+        String algo = currentAlgorithm;
         int[] cur;
 
         if ("DFS".equals(algo)) {
@@ -285,6 +300,8 @@ public class PathfindingVisualizerPanel extends JPanel {
             running = false;
             reconstructPath();
             statusLabel.setText("✅ Path found! Length: " + getPathLength());
+            accumulatedComputeTime += (System.nanoTime() - t0);
+            infoPanel.setComputeTime(accumulatedComputeTime);
             awardXP();
             return;
         }
@@ -296,7 +313,7 @@ public class PathfindingVisualizerPanel extends JPanel {
         for (int[] d : dirs) {
             int nr = r + d[0], nc = c + d[1];
             if (nr < 0 || nr >= ROWS || nc < 0 || nc >= COLS) continue;
-            if (grid[nr][nc] == WALL || grid[nr][nc] == VISITED) continue;
+            if (grid[nr][nc] == WALL || grid[nr][nc] == VISITED || grid[nr][nc] == START) continue;
             String key = nr + "," + nc;
             if (!cameFrom.containsKey(key)) {
                 cameFrom.put(key, r + "," + c);
@@ -307,6 +324,7 @@ public class PathfindingVisualizerPanel extends JPanel {
                 if (grid[nr][nc] != END) grid[nr][nc] = FRONTIER;
             }
         }
+        accumulatedComputeTime += (System.nanoTime() - t0);
         gridCanvas.repaint();
     }
 
@@ -397,7 +415,7 @@ public class PathfindingVisualizerPanel extends JPanel {
         if (sess.isLoggedIn()) {
             UserManager.getInstance().completeAlgorithm(
                     sess.getCurrentUser(),
-                    "PATH_" + algoBox.getSelectedItem().toString().toUpperCase(),
+                    "PATH_" + currentAlgorithm.toUpperCase(),
                     60);
         }
     }

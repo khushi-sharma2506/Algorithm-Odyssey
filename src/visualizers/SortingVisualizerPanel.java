@@ -2,6 +2,8 @@ package visualizers;
 
 import managers.SessionManager;
 import managers.UserManager;
+import ui.AlgorithmModule;
+import ui.components.AlgorithmInfoPanel;
 import ui.components.RoundedButton;
 import utils.ThemeManager;
 
@@ -15,7 +17,7 @@ import java.util.List;
  * Sorting Visualizer: Bubble, Selection, Insertion, Merge, Quick, Heap Sort.
  * Step-based animation using javax.swing.Timer.
  */
-public class SortingVisualizerPanel extends JPanel {
+public class SortingVisualizerPanel extends JPanel implements AlgorithmModule {
 
     // ── Colours for bar states ────────────────────────────────────────────────
     private static final Color COL_DEFAULT  = new Color(0x6C63FF);
@@ -39,11 +41,15 @@ public class SortingVisualizerPanel extends JPanel {
 
     // ── UI ────────────────────────────────────────────────────────────────────
     private JPanel       canvas;
-    private JComboBox<String> algoBox;
+    private String       currentAlgorithm = "Bubble Sort";
+    private AlgorithmInfoPanel infoPanel;
     private JSlider      speedSlider;
     private JLabel       statusLabel, compLabel, swapLabel;
     private JTextField   inputField;
     private RoundedButton startBtn, pauseBtn, resetBtn, stepBtn;
+
+    private static final String[] ALGOS = {"Bubble Sort", "Selection Sort", "Insertion Sort",
+                                           "Merge Sort", "Quick Sort", "Heap Sort"};
 
     public SortingVisualizerPanel() {
         setBackground(ThemeManager.BG_PRIMARY);
@@ -53,8 +59,23 @@ public class SortingVisualizerPanel extends JPanel {
         add(buildHeader(),  BorderLayout.NORTH);
         add(buildCanvas(),  BorderLayout.CENTER);
         add(buildControls(),BorderLayout.SOUTH);
+        
+        infoPanel = new AlgorithmInfoPanel();
+        add(infoPanel, BorderLayout.EAST);
 
         generateRandomArray(40);
+    }
+    
+    @Override
+    public String[] getAlgorithms() {
+        return ALGOS;
+    }
+
+    @Override
+    public void onAlgorithmSelected(String algorithm) {
+        this.currentAlgorithm = algorithm;
+        infoPanel.updateInfo(algorithm);
+        resetSort();
     }
 
     // ──────────────────────────────────────────────────────────────────────────
@@ -70,21 +91,7 @@ public class SortingVisualizerPanel extends JPanel {
         title.setFont(ThemeManager.FONT_LARGE);
         title.setForeground(ThemeManager.TEXT_PRIMARY);
 
-        String[] algos = {"Bubble Sort","Selection Sort","Insertion Sort",
-                          "Merge Sort","Quick Sort","Heap Sort"};
-        algoBox = new JComboBox<>(algos);
-        algoBox.setFont(ThemeManager.FONT_NORMAL);
-        algoBox.setBackground(ThemeManager.BG_SURFACE);
-        algoBox.setForeground(ThemeManager.TEXT_PRIMARY);
-        algoBox.setPreferredSize(new Dimension(180, 34));
-
-        JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
-        right.setOpaque(false);
-        right.add(new JLabel("Algorithm:") {{ setForeground(ThemeManager.TEXT_SECONDARY); setFont(ThemeManager.FONT_SMALL); }});
-        right.add(algoBox);
-
         p.add(title, BorderLayout.WEST);
-        p.add(right,  BorderLayout.EAST);
         return p;
     }
 
@@ -240,7 +247,7 @@ public class SortingVisualizerPanel extends JPanel {
     private void generateSteps() {
         steps.clear();
         int[] arr = array.clone();
-        String algo = (String) algoBox.getSelectedItem();
+        String algo = currentAlgorithm;
         assert algo != null;
         switch (algo) {
             case "Bubble Sort"    -> bubbleSort(arr);
@@ -390,7 +397,12 @@ public class SortingVisualizerPanel extends JPanel {
 
     private void startSort() {
         if (timer != null && timer.isRunning()) return;
-        if (steps.isEmpty()) generateSteps();
+        if (steps.isEmpty()) {
+            long t0 = System.nanoTime();
+            generateSteps();
+            long t1 = System.nanoTime();
+            infoPanel.setComputeTime(t1 - t0);
+        }
         comparisons = 0; swaps = 0;
         paused = false;
         pauseBtn.setText("⏸ Pause");
@@ -464,7 +476,7 @@ public class SortingVisualizerPanel extends JPanel {
         if (sess.isLoggedIn()) {
             UserManager.getInstance().completeAlgorithm(
                     sess.getCurrentUser(),
-                    "SORT_" + algoBox.getSelectedItem().toString().replace(" ","_").toUpperCase(),
+                    "SORT_" + currentAlgorithm.replace(" ","_").toUpperCase(),
                     50);
         }
     }

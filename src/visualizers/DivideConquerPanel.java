@@ -2,6 +2,8 @@ package visualizers;
 
 import managers.SessionManager;
 import managers.UserManager;
+import ui.AlgorithmModule;
+import ui.components.AlgorithmInfoPanel;
 import ui.components.RoundedButton;
 import utils.ThemeManager;
 
@@ -12,9 +14,15 @@ import java.util.List;
 
 /**
  * Divide & Conquer Visualizer.
- * Tabs: Tower of Hanoi | Binary Search | Merge Sort Tree
+ * Modules: Tower of Hanoi | Binary Search | Merge Sort Tree
  */
-public class DivideConquerPanel extends JPanel {
+public class DivideConquerPanel extends JPanel implements AlgorithmModule {
+
+    private final CardLayout cardLayout = new CardLayout();
+    private final JPanel cardsPanel = new JPanel(cardLayout);
+    private AlgorithmInfoPanel infoPanel;
+    private String currentAlgorithm = "Tower of Hanoi";
+    private static final String[] ALGOS = {"Tower of Hanoi", "Binary Search", "Merge Sort Tree"};
 
     public DivideConquerPanel() {
         setBackground(ThemeManager.BG_PRIMARY);
@@ -25,18 +33,29 @@ public class DivideConquerPanel extends JPanel {
         title.setFont(ThemeManager.FONT_LARGE);
         title.setForeground(ThemeManager.TEXT_PRIMARY);
         title.setBorder(BorderFactory.createEmptyBorder(0, 0, 14, 0));
+        
+        cardsPanel.setOpaque(false);
+        cardsPanel.add(new HanoiPanel(time -> infoPanel.setComputeTime(time)), "Tower of Hanoi");
+        cardsPanel.add(new BinarySearchPanel(time -> infoPanel.setComputeTime(time)), "Binary Search");
+        cardsPanel.add(new MergeSortTreePanel(time -> infoPanel.setComputeTime(time)), "Merge Sort Tree");
 
-        JTabbedPane tabs = new JTabbedPane();
-        tabs.setBackground(ThemeManager.BG_SECONDARY);
-        tabs.setForeground(ThemeManager.TEXT_PRIMARY);
-        tabs.setFont(ThemeManager.FONT_NORMAL);
-
-        tabs.addTab("🗼 Tower of Hanoi", new HanoiPanel());
-        tabs.addTab("🔍 Binary Search",  new BinarySearchPanel());
-        tabs.addTab("🔀 Merge Sort Tree",new MergeSortTreePanel());
+        infoPanel = new AlgorithmInfoPanel();
 
         add(title, BorderLayout.NORTH);
-        add(tabs,  BorderLayout.CENTER);
+        add(cardsPanel, BorderLayout.CENTER);
+        add(infoPanel, BorderLayout.EAST);
+    }
+
+    @Override
+    public String[] getAlgorithms() {
+        return ALGOS;
+    }
+
+    @Override
+    public void onAlgorithmSelected(String algorithm) {
+        this.currentAlgorithm = algorithm;
+        infoPanel.updateInfo(algorithm);
+        cardLayout.show(cardsPanel, algorithm);
     }
 
     // ══════════════════════════════════════════════════════════════════════════
@@ -49,8 +68,10 @@ public class DivideConquerPanel extends JPanel {
         private int step = 0;
         private int diskCount = 5;
         private Timer timer;
+        private final java.util.function.LongConsumer timeCallback;
 
-        HanoiPanel() {
+        HanoiPanel(java.util.function.LongConsumer cb) {
+            this.timeCallback = cb;
             setBackground(ThemeManager.BG_PRIMARY);
             setLayout(new BorderLayout(0, 10));
             setBorder(BorderFactory.createEmptyBorder(14, 14, 14, 14));
@@ -85,7 +106,10 @@ public class DivideConquerPanel extends JPanel {
                 diskCount = (int) diskSpinner.getValue();
                 initPegs();
                 moves.clear(); step = 0;
+                long t0 = System.nanoTime();
                 generateHanoi(diskCount, 0, 2, 1);
+                long t1 = System.nanoTime();
+                timeCallback.accept(t1 - t0);
                 timer = new Timer(1100 / speed.getValue(), null);
                 timer.addActionListener(te -> {
                     timer.setDelay(1100 / speed.getValue());
@@ -93,7 +117,9 @@ public class DivideConquerPanel extends JPanel {
                         int[] m = moves.get(step++);
                         int disk = pegs.get(m[0]).remove(pegs.get(m[0]).size()-1);
                         pegs.get(m[1]).add(disk);
-                        info.setText("Move " + step + " / " + moves.size());
+                        String[] pegNames = {"A", "B", "C"};
+                        info.setText("Step " + step + "/" + moves.size() + ": Moving Disk " + disk + 
+                                     " from Peg " + pegNames[m[0]] + " to Peg " + pegNames[m[1]]);
                         canvas.repaint();
                     } else {
                         timer.stop();
@@ -108,6 +134,7 @@ public class DivideConquerPanel extends JPanel {
                 diskCount = (int) diskSpinner.getValue();
                 initPegs(); moves.clear(); step = 0;
                 info.setText("Moves: 0");
+                timeCallback.accept(0);
                 canvas.repaint();
             });
 
@@ -195,8 +222,10 @@ public class DivideConquerPanel extends JPanel {
         private List<int[]> steps = new ArrayList<>(); // {left, mid, right, target}
         private int step = 0;
         private Timer timer;
+        private final java.util.function.LongConsumer timeCallback;
 
-        BinarySearchPanel() {
+        BinarySearchPanel(java.util.function.LongConsumer cb) {
+            this.timeCallback = cb;
             setBackground(ThemeManager.BG_PRIMARY);
             setLayout(new BorderLayout(0, 10));
             setBorder(BorderFactory.createEmptyBorder(14, 14, 14, 14));
@@ -235,22 +264,36 @@ public class DivideConquerPanel extends JPanel {
                 steps.clear(); step = 0;
                 try {
                     int target = Integer.parseInt(targetField.getText().trim());
+                    long t0 = System.nanoTime();
                     generateBinarySearchSteps(target);
+                    long t1 = System.nanoTime();
+                    timeCallback.accept(t1 - t0);
                 } catch (NumberFormatException ex) { status.setText("Invalid target!"); return; }
                 timer = new Timer(600, null);
                 timer.addActionListener(te -> {
                     if (step < steps.size()) {
                         int[] s = steps.get(step++);
-                        status.setText("L=" + arr[s[0]] + " M=" + arr[s[1]] + " R=" + arr[s[2]]
-                                + (step == steps.size() ?
-                                  (s[1] >= 0 ? "  ✅ Found at index " + s[1] : "  ❌ Not found") : ""));
+                        int l = s[0], m = s[1], r = s[2], target = s[3];
+                        
+                        String msg = "L=" + (l>=0&&l<arr.length?arr[l]:"") + " M=" + (m>=0?arr[m]:"") + " R=" + (r>=0&&r<arr.length?arr[r]:"") + "  |  ";
+                        if (m == -1) {
+                            msg += "❌ Target not found in the array.";
+                        } else if (arr[m] == target) {
+                            msg += "✅ Target " + target + " found at index " + m + "!";
+                        } else if (target < arr[m]) {
+                            msg += "Target (" + target + ") < Mid (" + arr[m] + "). Discarding right half.";
+                        } else {
+                            msg += "Target (" + target + ") > Mid (" + arr[m] + "). Discarding left half.";
+                        }
+                        
+                        status.setText(msg);
                         canvas.repaint();
                     } else { timer.stop(); }
                 });
                 timer.start();
             });
 
-            resetBtn.addActionListener(e -> { if (timer != null) timer.stop(); generateSortedArray(); steps.clear(); step = 0; status.setText("Ready"); canvas.repaint(); });
+            resetBtn.addActionListener(e -> { if (timer != null) timer.stop(); generateSortedArray(); steps.clear(); step = 0; status.setText("Ready"); timeCallback.accept(0); canvas.repaint(); });
 
             ctrl.add(new JLabel("Target:") {{ setForeground(ThemeManager.TEXT_SECONDARY); setFont(ThemeManager.FONT_SMALL); }});
             ctrl.add(targetField);
@@ -328,8 +371,10 @@ public class DivideConquerPanel extends JPanel {
         private final List<int[][]> nodes = new ArrayList<>(); // {arr, l, r, depth}
         private int animStep = 0;
         private Timer timer;
+        private final java.util.function.LongConsumer timeCallback;
 
-        MergeSortTreePanel() {
+        MergeSortTreePanel(java.util.function.LongConsumer cb) {
+            this.timeCallback = cb;
             setBackground(ThemeManager.BG_PRIMARY);
             setLayout(new BorderLayout(0, 10));
             setBorder(BorderFactory.createEmptyBorder(14, 14, 14, 14));
@@ -345,6 +390,10 @@ public class DivideConquerPanel extends JPanel {
 
             JPanel ctrl = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
             ctrl.setOpaque(false);
+
+            JLabel status = new JLabel("Enter a comma-separated array and click Visualize.");
+            status.setFont(ThemeManager.FONT_SMALL);
+            status.setForeground(ThemeManager.TEXT_SECONDARY);
 
             JTextField arrField = new JTextField("38,27,43,3,9,82,10", 28);
             arrField.setBackground(ThemeManager.BG_SURFACE);
@@ -364,23 +413,42 @@ public class DivideConquerPanel extends JPanel {
                     String[] parts = arrField.getText().split(",");
                     int[] arr = new int[parts.length];
                     for (int i = 0; i < parts.length; i++) arr[i] = Integer.parseInt(parts[i].trim());
+                    long t0 = System.nanoTime();
                     collectNodes(arr, 0, arr.length - 1, 0);
+                    long t1 = System.nanoTime();
+                    timeCallback.accept(t1 - t0);
                 } catch (Exception ex) { return; }
                 timer = new Timer(500, null);
                 timer.addActionListener(te -> {
-                    if (animStep < nodes.size()) { animStep++; canvas.repaint(); }
-                    else timer.stop();
+                    if (animStep < nodes.size()) { 
+                        int[][] node = nodes.get(animStep);
+                        int[] a = node[0];
+                        int l = node[1][0], r = node[1][1];
+                        if (l < r) {
+                            int[] sub = java.util.Arrays.copyOfRange(a, l, r + 1);
+                            status.setText("Step " + (animStep+1) + "/" + nodes.size() + ": Splitting array " + java.util.Arrays.toString(sub) + " into halves.");
+                        } else {
+                            status.setText("Step " + (animStep+1) + "/" + nodes.size() + ": Base case reached. Single element [" + a[l] + "].");
+                        }
+                        animStep++; 
+                        canvas.repaint(); 
+                    }
+                    else { 
+                        status.setText("✅ Merge Sort Tree completely expanded!");
+                        timer.stop(); 
+                    }
                 });
                 timer.start();
             });
 
-            resetBtn.addActionListener(e -> { if (timer != null) timer.stop(); nodes.clear(); animStep = 0; canvas.repaint(); });
+            resetBtn.addActionListener(e -> { if (timer != null) timer.stop(); nodes.clear(); animStep = 0; status.setText("Ready"); timeCallback.accept(0); canvas.repaint(); });
 
             ctrl.add(new JLabel("Array:") {{ setForeground(ThemeManager.TEXT_SECONDARY); setFont(ThemeManager.FONT_SMALL); }});
             ctrl.add(arrField); ctrl.add(animBtn); ctrl.add(resetBtn);
 
             add(canvas, BorderLayout.CENTER);
             add(ctrl,   BorderLayout.SOUTH);
+            add(status, BorderLayout.NORTH);
         }
 
         private void collectNodes(int[] arr, int l, int r, int depth) {

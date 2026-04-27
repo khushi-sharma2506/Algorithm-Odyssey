@@ -9,6 +9,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.RoundRectangle2D;
+import java.util.function.Consumer;
 
 /**
  * Left-side navigation sidebar.
@@ -36,6 +37,11 @@ public class SidebarPanel extends JPanel {
     private JLabel userLabel;
     private JLabel levelLabel;
     private JButton[] navButtons;
+    
+    // Algorithm selection
+    private JPanel algoOptionsPanel;
+    private JComboBox<String> algoBox;
+    private Consumer<String> algoSelectListener;
 
     public SidebarPanel(NavListener listener) {
         this.listener = listener;
@@ -74,6 +80,31 @@ public class SidebarPanel extends JPanel {
             navPanel.add(btn);
             navPanel.add(Box.createVerticalStrut(4));
         }
+        
+        // ── Algorithm Options ────────────────────────────────────────────────
+        algoOptionsPanel = new JPanel(new BorderLayout(0, 6));
+        algoOptionsPanel.setOpaque(false);
+        algoOptionsPanel.setBorder(BorderFactory.createEmptyBorder(20, 16, 10, 16));
+        
+        JLabel algoLabel = new JLabel("Algorithm:");
+        algoLabel.setFont(ThemeManager.FONT_SMALL);
+        algoLabel.setForeground(ThemeManager.TEXT_SECONDARY);
+        
+        algoBox = new JComboBox<>();
+        algoBox.setFont(ThemeManager.FONT_NORMAL);
+        algoBox.setBackground(ThemeManager.BG_SURFACE);
+        algoBox.setForeground(ThemeManager.TEXT_PRIMARY);
+        algoBox.addActionListener(e -> {
+            if (algoBox.getSelectedItem() != null && algoSelectListener != null) {
+                algoSelectListener.accept((String) algoBox.getSelectedItem());
+            }
+        });
+        
+        algoOptionsPanel.add(algoLabel, BorderLayout.NORTH);
+        algoOptionsPanel.add(algoBox, BorderLayout.CENTER);
+        algoOptionsPanel.setVisible(false);
+        
+        navPanel.add(algoOptionsPanel);
 
         // ── User Card ────────────────────────────────────────────────────────
         JPanel userCard = new JPanel(new BorderLayout(8, 2));
@@ -194,6 +225,30 @@ public class SidebarPanel extends JPanel {
             boolean active = NAV_ITEMS[i][2].equals(panel);
             navButtons[i].setForeground(active ? ThemeManager.ACCENT : ThemeManager.TEXT_SECONDARY);
         }
+        repaint();
+    }
+
+    /** Set the algorithm options dynamically based on the active module. */
+    public void setAlgorithmOptions(String[] options, Consumer<String> onSelect) {
+        if (options == null || options.length == 0) {
+            algoOptionsPanel.setVisible(false);
+            algoSelectListener = null;
+        } else {
+            algoSelectListener = null; // Temporarily detach to avoid firing on populate
+            algoBox.removeAllItems();
+            for (String opt : options) {
+                algoBox.addItem(opt);
+            }
+            algoSelectListener = onSelect;
+            if (algoBox.getItemCount() > 0) {
+                algoBox.setSelectedIndex(0);
+                if (onSelect != null) {
+                    onSelect.accept(algoBox.getItemAt(0));
+                }
+            }
+            algoOptionsPanel.setVisible(true);
+        }
+        revalidate();
         repaint();
     }
 
