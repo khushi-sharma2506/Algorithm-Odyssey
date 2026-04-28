@@ -5,7 +5,6 @@ import managers.UserManager;
 import managers.ScoreManager;
 import ui.components.RoundedButton;
 import utils.ThemeManager;
-
 import javax.swing.*;
 import java.awt.*;
 import java.util.*;
