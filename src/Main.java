@@ -4,7 +4,6 @@ import utils.ThemeManager;
 
 import javax.swing.*;
 import java.io.File;
-
 /**
  * AlgoVerse — Entry Point
  * Run: java -cp out Main   (after compiling with run.bat)
